@@ -1,0 +1,19 @@
+# Slime Rancher 2 Multiplayer Mod - [Discord](https://discord.com/invite/a7wfBw5feU)
+
+**LEGEND:**
+- 🟩 fully synced
+- 🟨 partially synced
+- 🟧 in progress
+- 🟥 not synced
+
+| Feature           | Status |
+|:-----------------:|:------:|
+| Player Movement   | 🟥     |
+| Slimes            | 🟥     |
+| Plorts            | 🟥     |
+| Money             | 🟥     |
+| Time              | 🟥     |
+| Decorations       | 🟥     |
+| Buildings         | 🟥     |
+| Gray Labyrinth    | 🟥     |
+| Silos             | 🟥     |
