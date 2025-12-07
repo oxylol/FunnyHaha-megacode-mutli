@@ -10,6 +10,9 @@
       <Reference Include="MelonLoader">
         <HintPath>libraries\MelonLoader.dll</HintPath>
       </Reference>
+      <Reference Include="SR2E">
+        <HintPath>libraries\SR2E.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>
