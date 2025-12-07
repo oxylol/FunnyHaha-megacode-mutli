@@ -5,22 +5,6 @@ using SR2E.Utils;
 using Main = SR2MP.Main;
 
 namespace SR2MP;
-
-public static class BuildInfo                                                                                           // Adds the Info to the SR2E Mod Menu.
-{
-    public const string Name = "Slime Rancher 2 Multiplayer Mod";                                                       // Name of the Expansion. 
-    public const string Description = "Adds Multiplayer to Slime Rancher 2";                                            // Description for the Expansion.
-    public const string Author = "Shark";                                                                               // Author of the Expansion.
-    public const string CoAuthors = null;                                                                               // CoAuthor(s) of the Expansion.  (optional, set as null if none)
-    public const string Contributors = "Gopher, Artur";                                                                 // Contributor(s) of the Expansion.  (optional, set as null if none)
-    public const string Company = null;                                                                                 // Company that made the Expansion.  (optional, set as null if none)
-    public const string Version = "1.0.0";                                                                              // Version of the Expansion.
-    public const string DownloadLink = null;                                                                            // Download Link for the Expansion.  (optional, set as null if none)
-    public const string SourceCode = "https://github.com/pyeight/SlimeRancher2Multiplayer";                             // Source Link for the Expansion.  (optional, set as null if none)
-    public const string Nexus = null;                                                                                   // Nexus Link for the Expansion.  (optional, set as null if none)
-    public const bool UsePrism = false;                                                                                 // Enable if you use Prism
-}
-
 public class HostCommand : SR2ECommand  // We should seperate the commands from this file later - if possible
 {
     public override bool Execute(string[] args)
