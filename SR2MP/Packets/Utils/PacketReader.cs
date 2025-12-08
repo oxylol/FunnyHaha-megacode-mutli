@@ -30,6 +30,8 @@ public sealed class PacketReader : IDisposable
         return result;
     }
 
+    public T ReadEnum<T>() => (T)ReadEnum(typeof(T)); // Special case to avoid the extra overhead of two switch cases happening at once
+
     public T Read<T>() => (T)Read(typeof(T));
 
     // This should NOT be used in actual RPCs! This is just a backing system! Use the concrete methods above!
