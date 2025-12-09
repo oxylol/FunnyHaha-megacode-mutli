@@ -7,11 +7,11 @@ namespace SR2MP;
 
 public class HostCommand : SR2ECommand
 {
-    private static Server.Server? server;
+    private static Server? server;
 
     public override bool Execute(string[] args)
     {
-        server = new Server.Server();
+        server = new Server();
         server.Start(1919);
         return true;
     }

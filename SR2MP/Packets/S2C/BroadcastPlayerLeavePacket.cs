@@ -2,20 +2,20 @@ using SR2MP.Packets.Utils;
 
 namespace SR2MP.Packets.S2C;
 
-public struct ConnectAckPacket : IPacket
+public struct BroadcastPlayerLeavePacket : IPacket
 {
     public byte Type { get; set; }
-    public string AssignedPlayerId { get; set; }
+    public string PlayerId { get; set; }
 
     public readonly void Serialise(PacketWriter writer)
     {
         writer.WriteByte(Type);
-        writer.WriteString(AssignedPlayerId);
+        writer.WriteString(PlayerId);
     }
 
     public void Deserialise(PacketReader reader)
     {
         Type = reader.ReadByte();
-        AssignedPlayerId = reader.ReadString();
+        PlayerId = reader.ReadString();
     }
 }

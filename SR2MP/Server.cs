@@ -1,33 +1,31 @@
-using System.Collections.Concurrent;
-using System.Net;
-using System.Net.Sockets;
+using SR2MP.Managers;
+using SR2MP.Packets.Utils;
+using SR2MP.Packets.S2C;
 
 namespace SR2MP;
 
 public sealed class Server
 {
-    public enum PacketType : byte
-    {   // Type                 // Hierachy                                     // Exception                            // Use Case
-        Connect = 0,            // Client -> Server                                                                     Try to connect to Server
-        ConnectAck = 1,         // Server -> Client                                                                     Initiate Player Join
-        Close = 2,              // Server -> All Clients                                                                Broadcast Server Close
-        PlayerJoin = 3,         // Server -> All Clients                        (except client that joins)              Add Player
-        PlayerLeave = 4,        // Server -> All Clients                        (except client that left)               Remove Player
-        PlayerUpdate = 5,       // Client -> Server -> All Clients              (except updater)                        Update Player
-        Heartbeat = 8,          // Client -> Server                                                                     Check if Clients are alive
-        HeartbeatAck = 9,       // Server -> Client                                                                     Automatically time the Clients out if the Server crashes
-    }
+    private readonly NetworkManager networkManager;
+    private readonly ClientManager clientManager;
+    private readonly PacketManager packetManager;
+    private Timer? timeoutTimer;
+    public int GetClientCount() => clientManager.ClientCount;
+    public bool IsRunning() => networkManager.IsRunning;
 
-    private UdpClient? server;
-    private Thread? receiverThread;
-    // volatile necessary for multi-threading
-    private volatile bool running;
-    // ConcurrentDictionary is a Dictionary but safe for multi-threading
-    private readonly ConcurrentDictionary<string, ClientInfo> clients = new ConcurrentDictionary<string, ClientInfo>();
+    public Server()
+    {
+        networkManager = new NetworkManager();
+        clientManager = new ClientManager();
+        packetManager = new PacketManager(networkManager, clientManager);
+
+        networkManager.OnDataReceived += OnDataReceived;
+        clientManager.OnClientRemoved += OnClientRemoved;
+    }
 
     public void Start(int port)
     {
-        if (running)
+        if (networkManager.IsRunning)
         {
             SrLogger.LogSensitive("Server is already running!");
             SrLogger.Log("Server is already running!");
@@ -36,15 +34,13 @@ public sealed class Server
 
         try
         {
-            server = new UdpClient(new IPEndPoint(IPAddress.Any, port));
-            running = true;
+            packetManager.RegisterHandlers();
+            networkManager.Start(port);
 
-            SrLogger.LogSensitive($"Server started on port {port}");
-            SrLogger.Log($"Server started on port {port}");
+            timeoutTimer = new Timer(CheckTimeouts, null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
 
-            receiverThread = new Thread(ReceiveLoop);
-            receiverThread.IsBackground = true;
-            receiverThread.Start();
+            SrLogger.LogSensitive($"Server started successfully on port {port}");
+            SrLogger.Log($"Server started successfully on port {port}");
         }
         catch (Exception ex)
         {
@@ -53,139 +49,80 @@ public sealed class Server
         }
     }
 
-    private void ReceiveLoop()
+    private void OnDataReceived(byte[] data, System.Net.IPEndPoint clientEP)
     {
-        if (server == null)
-        {
-            SrLogger.ErrorSensitive("Server is null!");
-            SrLogger.Error("Server is null!");
-            return;
-        }
-
-        IPEndPoint remoteEP = new IPEndPoint(IPAddress.Any, 0);
-
-        while (running)
-        {
-            try
-            {
-                byte[] data = server.Receive(ref remoteEP);
-
-                if (data.Length < 1)
-                    continue;
-
-                string clientInfo = $"{remoteEP.Address}:{remoteEP.Port}";
-                PacketType type = (PacketType)data[0];
-
-                switch (type)
-                {
-                    case PacketType.Connect:
-                        // HandleConnect(data, remoteEP, clientInfo);
-                        break;
-
-                    case PacketType.Heartbeat:
-                        HandleHeartbeat(clientInfo);
-                        break;
-
-                    default:
-                        SrLogger.WarnSensitive($"Unknown packet type: {type} from {clientInfo}");
-                        SrLogger.Warn($"Unknown packet type: {type} from {clientInfo}");
-                        break;
-                }
-            }
-            catch (SocketException)
-            {
-                if (!running)
-                    return;
-            }
-            catch (Exception ex)
-            {
-                SrLogger.ErrorSensitive($"ReceiveLoop Error: {ex}");
-                SrLogger.Error($"ReceiveLoop Error: {ex}");
-            }
-        }
+        packetManager.HandlePacket(data, clientEP);
     }
 
-    private void Send(byte[] data, IPEndPoint clientEP)
+    private void OnClientRemoved(Models.ClientInfo client)
     {
-        if (server == null) return;
+        var leavePacket = new BroadcastPlayerLeavePacket
+        {
+            // This needs to be dynamic in the future
+            Type = 4,
+            PlayerId = client.PlayerId
+        };
 
+        using var writer = new PacketWriter();
+        leavePacket.Serialise(writer);
+        byte[] data = writer.ToArray();
+
+        foreach (var otherClient in clientManager.GetAllClients())
+        {
+            networkManager.Send(data, otherClient.EndPoint);
+        }
+
+        SrLogger.LogSensitive($"Player left broadcast sent for: {client.PlayerId}");
+        SrLogger.Log($"Player left broadcast sent for: {client.PlayerId}");
+    }
+
+    private void CheckTimeouts(object? state)
+    {
         try
         {
-            server.Send(data, data.Length, clientEP);
+            clientManager.RemoveTimedOutClients();
         }
         catch (Exception ex)
         {
-            SrLogger.ErrorSensitive($"Failed to send data to {clientEP}: {ex}");
-            SrLogger.Error($"Failed to send data to client: {ex}");
+            SrLogger.ErrorSensitive($"Error checking timeouts: {ex}");
+            SrLogger.Error($"Error checking timeouts: {ex}");
         }
-    }
-
-    private void Send(byte[] data, string clientInfo)
-    {
-        if (clients.TryGetValue(clientInfo, out ClientInfo? client))
-        {
-            Send(data, client.EndPoint);
-        }
-        else
-        {
-            SrLogger.WarnSensitive($"Attempted to send to unknown client: {clientInfo}");
-            SrLogger.Warn($"Attempted to send to unknown client!");
-        }
-    }
-
-    public class ClientInfo
-    {
-        public IPEndPoint EndPoint { get; set; }
-        public DateTime LastHeartbeat { get; set; }
-        public string PlayerId { get; set; }
-
-        public ClientInfo(IPEndPoint endPoint, string playerId = "")
-        {
-            EndPoint = endPoint;
-            LastHeartbeat = DateTime.UtcNow;
-            PlayerId = playerId;
-        }
-
-        public void UpdateHeartbeat() => LastHeartbeat = DateTime.UtcNow;
-
-        public bool IsTimedOut() => (DateTime.UtcNow - LastHeartbeat).TotalSeconds > 30;
     }
 
     public void Close()
     {
-        if (!running)
+        if (!networkManager.IsRunning)
             return;
-
-        running = false;
 
         try
         {
-            byte[] closePacket = new byte[] { (byte)PacketType.Close };
-            foreach (var client in clients)
+            timeoutTimer?.Dispose();
+            timeoutTimer = null;
+
+            var closePacket = new ClosePacket
+            {
+                // This needs to be dynamic in the future
+                Type = 2
+            };
+
+            using var writer = new PacketWriter();
+            closePacket.Serialise(writer);
+            byte[] data = writer.ToArray();
+
+            foreach (var client in clientManager.GetAllClients())
             {
                 try
                 {
-                    Send(closePacket, client.Value.EndPoint);
+                    networkManager.Send(data, client.EndPoint);
                 }
                 catch (Exception ex)
                 {
-                    SrLogger.WarnSensitive($"Failed to send close packet to client: {client.Key}: {ex}");
-                    SrLogger.Warn($"Failed to notify client of server shutdown!");
+                    SrLogger.WarnSensitive($"Failed to send close packet to client: {client.GetClientInfo()}: {ex}");
+                    SrLogger.Warn($"Failed to notify specific client of server shutdown: {ex}");
                 }
             }
-
-            clients.Clear();
-
-            server?.Close();
-
-            if (receiverThread != null && receiverThread.IsAlive)
-            {
-                if (!receiverThread.Join(TimeSpan.FromSeconds(2)))
-                {
-                    SrLogger.WarnSensitive($"Failed to stop receiver thread!");
-                    SrLogger.Warn("Failed to stop receiver thread!");
-                }
-            }
+            clientManager.Clear();
+            networkManager.Stop();
 
             SrLogger.LogSensitive("Server closed");
             SrLogger.Log("Server closed");
@@ -194,24 +131,6 @@ public sealed class Server
         {
             SrLogger.ErrorSensitive($"Error during server shutdown: {ex}");
             SrLogger.Error($"Error during server shutdown: {ex}");
-        }
-    }
-
-    private void HandleHeartbeat(string clientInfo)
-    {
-        if (clients.TryGetValue(clientInfo, out ClientInfo? client))
-        {
-            client.UpdateHeartbeat();
-
-            byte[] acknowledgePacket = new byte[] { (byte)PacketType.HeartbeatAck };
-            Send(acknowledgePacket, clientInfo);
-
-            SrLogger.LogSensitive($"Heartbeat received from {clientInfo}");
-        }
-        else
-        {
-            SrLogger.WarnSensitive($"Received Heartbeat from unknown client: {clientInfo}");
-            SrLogger.Warn("Received Heartbeat from unknown client!");
         }
     }
 }
