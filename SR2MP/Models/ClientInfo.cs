@@ -7,12 +7,15 @@ public class ClientInfo
     public IPEndPoint EndPoint { get; set; }
     private DateTime LastHeartbeat { get; set; }
     public string PlayerId { get; set; }
+    // Shark: Not sure if this is necessary
+    // public string isAuthenticated { get; set; }
 
     public ClientInfo(IPEndPoint endPoint, string playerId = "")
     {
         EndPoint = endPoint;
         LastHeartbeat = DateTime.UtcNow;
         PlayerId = playerId;
+        // Authenticated = isAuthenticated;
     }
 
     public void UpdateHeartbeat() => LastHeartbeat = DateTime.UtcNow;
