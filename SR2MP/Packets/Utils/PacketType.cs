@@ -13,4 +13,6 @@ public enum PacketType : byte
     // BroadcastPlayerUpdate
     Heartbeat = 8,                // Client -> Server                                                                   Check if Clients are alive
     HeartbeatAck = 9,             // Server -> Client                                                                   Automatically time the Clients out if the Server crashes
+    ChatMessage = 10,
+    BroadcastChatMessage = 11,
 }

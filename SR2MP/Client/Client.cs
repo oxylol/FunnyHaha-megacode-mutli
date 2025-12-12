@@ -27,6 +27,7 @@ public sealed class Client
     public event Action<string>? OnPlayerJoined;
     public event Action<string>? OnPlayerLeft;
     public event Action<string, RemotePlayer>? OnPlayerUpdate;
+    public event Action<string, string, DateTime>? OnChatMessageReceived;
 
     public Client()
     {
@@ -128,6 +129,30 @@ public sealed class Client
         SendPacket(updatePacket);
     }
 
+    public void SendChatMessage(string message)
+    {
+        if (!isConnected || string.IsNullOrEmpty(OwnPlayerId))
+        {
+            SrLogger.LogWarning("Cannot send chat message: Not connected to server!");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            SrLogger.LogWarning("Cannot send empty chat message!");
+            return;
+        }
+
+        var chatPacket = new ChatMessagePacket
+        {
+            Type = (byte)PacketType.ChatMessage,
+            PlayerId = OwnPlayerId,
+            Message = message
+        };
+
+        SendPacket(chatPacket);
+    }
+
     internal void StartHeartbeat()
     {
         heartbeatTimer = new Timer(SendHeartbeat, null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
@@ -211,6 +236,11 @@ public sealed class Client
     internal void NotifyConnected()
     {
         OnConnected?.Invoke(OwnPlayerId);
+    }
+
+    internal void NotifyChatMessageReceived(string playerId, string message, DateTime timestamp)
+    {
+        OnChatMessageReceived?.Invoke(playerId, message, timestamp);
     }
 
     public RemotePlayer? GetRemotePlayer(string playerId)
