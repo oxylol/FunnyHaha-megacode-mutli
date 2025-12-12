@@ -42,8 +42,7 @@ public sealed class Client
     {
         if (isConnected)
         {
-            SrLogger.LogSensitive("You are already connected to a Server!");
-            SrLogger.Log("You are already connected to a Server!");
+            SrLogger.LogMessage("You are already connected to a Server!", SrLogger.LogTarget.Both);
             return;
         }
 
@@ -69,14 +68,12 @@ public sealed class Client
 
             SendPacket(connectPacket);
 
-            SrLogger.LogSensitive($"Connecting to {serverIp}:{port} as {playerId}...");
-            SrLogger.Log("Connecting to the Server...");
+            SrLogger.LogMessage("Connecting to the Server...",
+                $"Connecting to {serverIp}:{port} as {playerId}...");
         }
         catch (Exception ex)
         {
-
-            SrLogger.ErrorSensitive($"Error connecting to the Server: {ex}");
-            SrLogger.Error($"Error connecting to the Server: {ex}");
+            SrLogger.LogError($"Error connecting to the Server: {ex}", SrLogger.LogTarget.Both);
             isConnected = false;
             throw;
         }
@@ -86,8 +83,7 @@ public sealed class Client
     {
         if (udpClient == null)
         {
-            SrLogger.LogSensitive("UDP client is null in ReceiveLoop!");
-            SrLogger.Log("UDP client is null in ReceiveLoop!");
+            SrLogger.LogError("UDP client is null in ReceiveLoop!", SrLogger.LogTarget.Both);
             return;
         }
 
@@ -111,8 +107,7 @@ public sealed class Client
             }
             catch (Exception ex)
             {
-                SrLogger.ErrorSensitive($"ReceiveLoop error: {ex}");
-                SrLogger.Error($"ReceiveLoop error: {ex}");
+                SrLogger.LogError($"ReceiveLoop error: {ex}");
             }
         }
     }
@@ -155,8 +150,7 @@ public sealed class Client
     {
         if (udpClient == null || serverEndPoint == null || !isConnected)
         {
-            SrLogger.WarnSensitive("Cannot send packet: Not connected to a Server!");
-            SrLogger.Warn("Cannot send packet: Not connected to a Server!");
+            SrLogger.LogWarning("Cannot send packet: Not connected to a Server!");
             return;
         }
 
@@ -170,8 +164,7 @@ public sealed class Client
         }
         catch (Exception ex)
         {
-            SrLogger.ErrorSensitive($"Failed to send packet: {ex}");
-            SrLogger.Error($"Failed to send packet: {ex}");
+            SrLogger.LogError($"Failed to send packet: {ex}", SrLogger.LogTarget.Both);
         }
     }
 
@@ -200,21 +193,18 @@ public sealed class Client
             {
                 if (!receiveThread.Join(TimeSpan.FromSeconds(2)))
                 {
-                    SrLogger.WarnSensitive("Receive thread did not stop gracefully");
-                    SrLogger.Warn("Receive thread did not stop gracefully");
+                    SrLogger.LogWarning("Receive thread did not stop gracefully", SrLogger.LogTarget.Both);
                 }
             }
 
             playerManager.Clear();
 
-            SrLogger.LogSensitive("Disconnected from server");
-            SrLogger.Log("Disconnected from server");
+            SrLogger.LogMessage("Disconnected from server", SrLogger.LogTarget.Both);
             OnDisconnected?.Invoke();
         }
         catch (Exception ex)
         {
-            SrLogger.ErrorSensitive($"Error during disconnect: {ex}");
-            SrLogger.Error($"Error during disconnect: {ex}");
+            SrLogger.LogError($"Error during disconnect: {ex}", SrLogger.LogTarget.Both);
         }
     }
 
