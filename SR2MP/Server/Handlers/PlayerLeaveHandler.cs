@@ -25,8 +25,8 @@ public class PlayerLeaveHandler : BasePacketHandler
 
         string clientInfo = $"{senderEndPoint.Address}:{senderEndPoint.Port}";
 
-        SrLogger.LogSensitive($"Player leave request from {clientInfo} (PlayerId: {playerId})");
-        SrLogger.Log($"Player leave request received (PlayerId: {playerId})");
+        SrLogger.LogMessage($"Player leave request received (PlayerId: {playerId})",
+            $"Player leave request from {clientInfo} (PlayerId: {playerId})");
 
         if (clientManager.RemoveClient(clientInfo))
         {
@@ -38,13 +38,13 @@ public class PlayerLeaveHandler : BasePacketHandler
 
             BroadcastToAll(leavePacket);
 
-            SrLogger.LogSensitive($"Player {playerId} left from {clientInfo}");
-            SrLogger.Log($"Player {playerId} left the server");
+            SrLogger.LogMessage($"Player {playerId} left the server",
+                $"Player {playerId} left from {clientInfo}");
         }
         else
         {
-            SrLogger.WarnSensitive($"Attempted to remove unknown client: {clientInfo}");
-            SrLogger.Warn($"Player leave request from unknown client (PlayerId: {playerId})");
+            SrLogger.LogWarning($"Player leave request from unknown client (PlayerId: {playerId})",
+                $"Player leave request from unknown client: {clientInfo} (PlayerId: {playerId})");
         }
     }
 }

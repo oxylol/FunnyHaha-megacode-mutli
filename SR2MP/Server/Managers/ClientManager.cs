@@ -37,15 +37,15 @@ public class ClientManager
 
         if (clients.TryAdd(clientInfo, client))
         {
-            SrLogger.LogSensitive($"Client added: {clientInfo} (PlayerId: {playerId})");
-            SrLogger.Log($"Client added! (PlayerId: {playerId})");
+            SrLogger.LogMessage($"Client added! (PlayerId: {playerId})",
+                $"Client added: {clientInfo} (PlayerId: {playerId})");
             OnClientAdded?.Invoke(client);
             return client;
         }
         else
         {
-            SrLogger.WarnSensitive($"Client already exists: {clientInfo}");
-            SrLogger.Warn($"Client already exists! (PlayerId: {playerId})");
+            SrLogger.LogWarning($"Client already exists! (PlayerId: {playerId})",
+                $"Client already exists: {clientInfo} (PlayerId: {playerId})");
             return clients[clientInfo];
         }
     }
@@ -54,8 +54,8 @@ public class ClientManager
     {
         if (clients.TryRemove(clientInfo, out var client))
         {
-            SrLogger.LogSensitive($"Client removed: {clientInfo}");
-            SrLogger.Log($"Client removed!");
+            SrLogger.LogMessage($"Client removed!",
+                $"Client removed: {clientInfo}");
             OnClientRemoved?.Invoke(client);
             return true;
         }
@@ -107,7 +107,6 @@ public class ClientManager
             OnClientRemoved?.Invoke(client);
         }
 
-        SrLogger.LogSensitive("All clients cleared");
-        SrLogger.Log("All clients cleared");
+        SrLogger.LogMessage("All clients cleared", SrLogger.LogTarget.Both);
     }
 }

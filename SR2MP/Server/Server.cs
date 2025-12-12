@@ -1,6 +1,7 @@
 using SR2MP.Server.Managers;
 using SR2MP.Packets.Utils;
 using SR2MP.Packets.S2C;
+using UnityEngine;
 
 namespace SR2MP.Server;
 
@@ -27,8 +28,7 @@ public sealed class Server
     {
         if (networkManager.IsRunning)
         {
-            SrLogger.LogSensitive("Server is already running!");
-            SrLogger.Log("Server is already running!");
+            SrLogger.LogMessage("Server is already running!", SrLogger.LogTarget.Both);
             return;
         }
 
@@ -39,13 +39,11 @@ public sealed class Server
 
             timeoutTimer = new Timer(CheckTimeouts, null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
 
-            SrLogger.LogSensitive($"Server started successfully on port {port}");
-            SrLogger.Log($"Server started successfully on port {port}");
+            SrLogger.LogMessage($"Server started successfully on port {port}", SrLogger.LogTarget.Both);
         }
         catch (Exception ex)
         {
-            SrLogger.ErrorSensitive($"Failed to start server: {ex}");
-            SrLogger.Error($"Failed to start server: {ex}");
+            SrLogger.LogError($"Failed to start server: {ex}", SrLogger.LogTarget.Both);
         }
     }
 
@@ -71,8 +69,7 @@ public sealed class Server
             networkManager.Send(data, otherClient.EndPoint);
         }
 
-        SrLogger.LogSensitive($"Player left broadcast sent for: {client.PlayerId}");
-        SrLogger.Log($"Player left broadcast sent for: {client.PlayerId}");
+        SrLogger.LogMessage($"Player left broadcast sent for: {client.PlayerId}", SrLogger.LogTarget.Both);
     }
 
     private void CheckTimeouts(object? state)
@@ -83,8 +80,7 @@ public sealed class Server
         }
         catch (Exception ex)
         {
-            SrLogger.ErrorSensitive($"Error checking timeouts: {ex}");
-            SrLogger.Error($"Error checking timeouts: {ex}");
+            SrLogger.LogError($"Error checking timeouts: {ex}");
         }
     }
 
@@ -115,20 +111,18 @@ public sealed class Server
                 }
                 catch (Exception ex)
                 {
-                    SrLogger.WarnSensitive($"Failed to send close packet to client: {client.GetClientInfo()}: {ex}");
-                    SrLogger.Warn($"Failed to notify specific client of server shutdown: {ex}");
+                    SrLogger.LogWarning($"Failed to notify specific client of server shutdown: {ex}",
+                        $"Failed to send close packet to client: {client.GetClientInfo()}: {ex}");
                 }
             }
             clientManager.Clear();
             networkManager.Stop();
 
-            SrLogger.LogSensitive("Server closed");
-            SrLogger.Log("Server closed");
+            SrLogger.LogMessage("Server closed", SrLogger.LogTarget.Both);
         }
         catch (Exception ex)
         {
-            SrLogger.ErrorSensitive($"Error during server shutdown: {ex}");
-            SrLogger.Error($"Error during server shutdown: {ex}");
+            SrLogger.LogError($"Error during server shutdown: {ex}", SrLogger.LogTarget.Both);
         }
     }
 }

@@ -23,8 +23,8 @@ public class ConnectHandler : BasePacketHandler
 
         string playerId = reader.ReadString();
 
-        SrLogger.LogSensitive($"Connect request from {senderEndPoint} with PlayerId: {playerId}");
-        SrLogger.Log($"Connect request received with PlayerId: {playerId}");
+        SrLogger.LogMessage($"Connect request received with PlayerId: {playerId}",
+            $"Connect request from {senderEndPoint} with PlayerId: {playerId}");
 
         var client = clientManager.AddClient(senderEndPoint, playerId);
 
@@ -44,7 +44,7 @@ public class ConnectHandler : BasePacketHandler
 
         BroadcastToAllExcept(joinPacket, senderEndPoint);
 
-        SrLogger.LogSensitive($"Player {playerId} successfully connected from {senderEndPoint}");
-        SrLogger.Log($"Player {playerId} successfully connected");
+        SrLogger.LogMessage($"Player {playerId} successfully connected",
+            $"Player {playerId} successfully connected from {senderEndPoint}");
     }
 }

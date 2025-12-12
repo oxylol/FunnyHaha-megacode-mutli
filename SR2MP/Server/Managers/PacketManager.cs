@@ -36,27 +36,23 @@ public class PacketManager
                 if (handler != null)
                 {
                     handlers[attribute.PacketType] = handler;
-                    SrLogger.LogSensitive($"Registered handler: {type.Name} for packet type {attribute.PacketType}");
-                    SrLogger.Log($"Registered handler: {type.Name} for packet type {attribute.PacketType}");
+                    SrLogger.LogMessage($"Registered handler: {type.Name} for packet type {attribute.PacketType}", SrLogger.LogTarget.Both);
                 }
             }
             catch (Exception ex)
             {
-                SrLogger.ErrorSensitive($"Failed to register handler {type.Name}: {ex}");
-                SrLogger.Error($"Failed to register handler {type.Name}: {ex}");
+                SrLogger.LogError($"Failed to register handler {type.Name}: {ex}", SrLogger.LogTarget.Both);
             }
         }
 
-        SrLogger.LogSensitive($"Total handlers registered: {handlers.Count}");
-        SrLogger.Log($"Total handlers registered: {handlers.Count}");
+        SrLogger.LogMessage($"Total handlers registered: {handlers.Count}", SrLogger.LogTarget.Both);
     }
 
     public void HandlePacket(byte[] data, IPEndPoint clientEP)
     {
         if (data.Length < 1)
         {
-            SrLogger.WarnSensitive("Received empty packet");
-            SrLogger.Warn("Received empty packet");
+            SrLogger.LogWarning("Received empty packet", SrLogger.LogTarget.Both);
             return;
         }
 
@@ -70,14 +66,12 @@ public class PacketManager
             }
             catch (Exception ex)
             {
-                SrLogger.ErrorSensitive($"Error handling packet type {packetType}: {ex}");
-                SrLogger.Error($"Error handling packet type {packetType}: {ex}");
+                SrLogger.LogError($"Error handling packet type {packetType}: {ex}", SrLogger.LogTarget.Both);
             }
         }
         else
         {
-            SrLogger.WarnSensitive($"No handler found for packet type: {packetType}");
-            SrLogger.Warn($"No handler found for packet type: {packetType}");
+            SrLogger.LogWarning($"No handler found for packet type: {packetType}");
         }
     }
 }
