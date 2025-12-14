@@ -23,8 +23,7 @@ public sealed class Main : SR2EExpansionV2
 
     public override void OnSceneWasLoaded(int _, string sceneName)
     {
-        SrLogger.LogMessage(Environment.MachineName +  Environment.UserName);
-        SrLogger.LogMessage(PlayerIdGenerator.GeneratePersistentPlayerId());
+        
     }
 
     public override void OnLateInitializeMelon()
