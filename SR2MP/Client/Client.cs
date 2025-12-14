@@ -50,9 +50,6 @@ public sealed class Client
 
         try
         {
-            receiveThread = new Thread(ReceiveLoop);
-            receiveThread.IsBackground = true;
-            receiveThread.Start();
             udpClient = new UdpClient();
             serverEndPoint = new IPEndPoint(IPAddress.Parse(serverIp), port);
 
@@ -61,6 +58,9 @@ public sealed class Client
             packetManager.RegisterHandlers();
 
             isConnected = true;
+            receiveThread = new Thread(ReceiveLoop);
+            receiveThread.IsBackground = true;
+            receiveThread.Start();
 
             var connectPacket = new ConnectPacket
             {
