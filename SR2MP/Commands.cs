@@ -1,4 +1,6 @@
+using Microsoft.VisualBasic;
 using SR2E;
+using SR2MP.Shared.Utils;
 
 namespace SR2MP;
 
@@ -53,7 +55,8 @@ public class JoinCommand : SR2ECommand
 {
     public override bool Execute(string[] args)
     {
-        // MultiplayerManager.Instance.Connect(args[0]); <- Tarr's code
+        var client = new Client.Client();
+        client.Connect(args[0],int.Parse(args[1]));
         return true;
     }
 

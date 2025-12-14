@@ -1,4 +1,5 @@
 ﻿using SR2E.Expansion;
+using SR2MP.Shared.Utils;
 
 namespace SR2MP;
 
@@ -22,7 +23,8 @@ public sealed class Main : SR2EExpansionV2
 
     public override void OnSceneWasLoaded(int _, string sceneName)
     {
-        SrLogger.LogMessage($"test log owo :3 - {sceneName}");
+        SrLogger.LogMessage(Environment.MachineName +  Environment.UserName);
+        SrLogger.LogMessage(PlayerIdGenerator.GeneratePersistentPlayerId());
     }
 
     public override void OnLateInitializeMelon()

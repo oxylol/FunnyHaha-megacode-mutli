@@ -40,7 +40,7 @@ public sealed class Client
         playerManager.OnPlayerUpdated += (playerId, player) => OnPlayerUpdate?.Invoke(playerId, player);
     }
 
-    public void Connect(string serverIp, int port, string playerId)
+    public void Connect(string serverIp, int port)
     {
         if (isConnected)
         {
@@ -65,13 +65,13 @@ public sealed class Client
             var connectPacket = new ConnectPacket
             {
                 Type = (byte)PacketType.Connect,
-                PlayerId = playerId
+                PlayerId = OwnPlayerId
             };
 
             SendPacket(connectPacket);
 
             SrLogger.LogMessage("Connecting to the Server...",
-                $"Connecting to {serverIp}:{port} as {playerId}...");
+                $"Connecting to {serverIp}:{port} as {OwnPlayerId}...");
         }
         catch (Exception ex)
         {
