@@ -61,9 +61,10 @@ public sealed class Client
 
             isConnected = true;
 
-            receiveThread = new Thread(ReceiveLoop);
-            receiveThread.IsBackground = true;
-            receiveThread.Start();
+            ReceiveLoop();
+            // receiveThread = new Thread(ReceiveLoop);
+            // receiveThread.IsBackground = true;
+            // receiveThread.Start();
 
             var connectPacket = new ConnectPacket
             {

@@ -33,9 +33,10 @@ public class NetworkManager
             SrLogger.LogMessage($"Server started on port: {port}",
                 $"Server started {IPAddress.Any}:{port}");
 
-            receiveThread = new Thread(ReceiveLoop);
-            receiveThread.IsBackground = true;
-            receiveThread.Start();
+            ReceiveLoop();
+            // receiveThread = new Thread(ReceiveLoop);
+            // receiveThread.IsBackground = true;
+            // receiveThread.Start();
         }
         catch (Exception ex)
         {
