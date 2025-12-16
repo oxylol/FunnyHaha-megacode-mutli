@@ -26,7 +26,7 @@ public class NetworkManager
         {
             udpClient = new UdpClient(new IPEndPoint(IPAddress.Any, port));
             // This is completely fine, THIS DOES NOT DELAY OR DROP PACKETS!!!
-            udpClient.Client.ReceiveTimeout = 1000000000;
+            udpClient.Client.ReceiveTimeout = 20000;
 
             isRunning = true;
 
@@ -75,6 +75,7 @@ public class NetworkManager
             }
             catch (SocketException)
             {
+                SrLogger.LogMessage("No Data received!", SrLogger.LogTarget.Both);
             }
             catch (Exception ex)
             {
