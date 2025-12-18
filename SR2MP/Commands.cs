@@ -29,7 +29,20 @@ public class JoinCommand : SR2ECommand
     public override bool Execute(string[] args)
     {
         MenuEUtil.CloseOpenMenu();
-        Main.Client.Connect(args[0],int.Parse(args[1]));
+
+        if (args.Length < 2)
+        {
+            return false;
+        }
+
+        string ip = args[0];
+        int port = int.Parse(args[1]);
+        if (ip.StartsWith("[") && ip.EndsWith("]"))
+        {
+            ip = ip.Substring(1, ip.Length - 2);
+        }
+
+        Main.Client.Connect(ip, port);
         return true;
     }
 
