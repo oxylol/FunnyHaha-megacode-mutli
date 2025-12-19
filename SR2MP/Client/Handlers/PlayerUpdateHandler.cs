@@ -21,7 +21,7 @@ public class PlayerUpdateHandler : BaseClientPacketHandler
         if (packet.PlayerId == Client.OwnPlayerId)
             return;
 
-        PlayerManager.UpdatePlayerFull(
+        PlayerManager.UpdatePlayer(
             packet.PlayerId,
             packet.Position,
             packet.Rotation,

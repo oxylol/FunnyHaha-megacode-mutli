@@ -48,7 +48,7 @@ public class RemotePlayerManager
         return false;
     }
 
-    public void UpdatePlayerFull(
+    public void UpdatePlayer(
         string playerId,
         Vector3 position,
         Quaternion rotation,
