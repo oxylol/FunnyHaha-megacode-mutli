@@ -12,7 +12,6 @@ namespace SR2MP.Components
         public TextMesh usernamePanel;
         private float transformTimer = PlayerTimer;
         private Animator animator;
-        private Transform cachedTransform;
 
         public void SetUsername(string username)
         {
@@ -36,7 +35,6 @@ namespace SR2MP.Components
             }
 
             animator = GetComponent<Animator>();
-            cachedTransform = transform;
 
             if (animator == null)
             {
@@ -73,8 +71,8 @@ namespace SR2MP.Components
                 if (Main.Client.IsConnected)
                 {
                     Main.Client.SendPlayerUpdate(
-                        position: cachedTransform.position,
-                        rotation: cachedTransform.rotation,
+                        position: transform.position,
+                        rotation: transform.rotation,
                         horizontalMovement: animator.GetFloat("HorizontalMovement"),
                         forwardMovement: animator.GetFloat("ForwardMovement"),
                         yaw: animator.GetFloat("Yaw"),
