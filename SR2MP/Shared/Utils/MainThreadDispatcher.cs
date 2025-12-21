@@ -2,31 +2,28 @@ using UnityEngine;
 using System.Collections.Concurrent;
 using System;
 using Il2CppInterop.Runtime.Injection;
+using MelonLoader;
 
 namespace SR2MP.Shared.Utils;
 
+[RegisterTypeInIl2Cpp(false)]
 public class MainThreadDispatcher : MonoBehaviour
 {
-    private static MainThreadDispatcher instance;
+    public static MainThreadDispatcher Instance { get; private set; }
     private static readonly ConcurrentQueue<Action> actionQueue = new();
-
-    static MainThreadDispatcher()
-    {
-        ClassInjector.RegisterTypeInIl2Cpp<MainThreadDispatcher>();
-    }
 
     public static void Initialize()
     {
-        if (instance != null) return;
+        if (Instance != null) return;
 
-        var go = new GameObject("SR2MP_Dispatcher");
-        instance = go.AddComponent<MainThreadDispatcher>();
-        DontDestroyOnLoad(go);
+        var obj = new GameObject("SR2MP_MainThreadDispatcher");
+        Instance = obj.AddComponent<MainThreadDispatcher>();
+        DontDestroyOnLoad(obj);
 
         SrLogger.LogMessage("Main thread dispatcher initialized", SrLogger.LogTarget.Both);
     }
 
-    private void Update()
+    void Update()
     {
         while (actionQueue.TryDequeue(out var action))
         {
@@ -44,7 +41,6 @@ public class MainThreadDispatcher : MonoBehaviour
 
     public static void Enqueue(Action action)
     {
-        if (action == null) return;
         actionQueue.Enqueue(action);
         SrLogger.LogMessage($"Enqueued some action: {action}");
     }
@@ -52,7 +48,7 @@ public class MainThreadDispatcher : MonoBehaviour
     private void OnDestroy()
     {
 #nullable disable
-        instance = null;
+        Instance = null;
 #nullable enable
     }
 }
