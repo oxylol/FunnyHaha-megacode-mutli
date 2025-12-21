@@ -1,6 +1,7 @@
 using System.Net;
 using System.Reflection;
 using SR2MP.Packets.Utils;
+using SR2MP.Shared.Utils;
 
 namespace SR2MP.Server.Managers;
 
@@ -21,8 +22,8 @@ public class PacketManager
         var assembly = Assembly.GetExecutingAssembly();
         var handlerTypes = assembly.GetTypes()
             .Where(type => type.GetCustomAttribute<PacketHandlerAttribute>() != null
-                     && typeof(IPacketHandler).IsAssignableFrom(type)
-                     && !type.IsAbstract);
+                           && typeof(IPacketHandler).IsAssignableFrom(type)
+                           && !type.IsAbstract);
 
         foreach (var type in handlerTypes)
         {
@@ -62,7 +63,7 @@ public class PacketManager
         {
             try
             {
-                handler.Handle(data, clientEP);
+                MainThreadDispatcher.Enqueue(() => handler.Handle(data, clientEP));
             }
             catch (Exception ex)
             {
