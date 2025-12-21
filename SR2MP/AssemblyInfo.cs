@@ -30,7 +30,7 @@ internal static class BuildInfo
     internal const string Description = "Adds Multiplayer to Slime Rancher 2";
     internal const string Author = "Shark";
     internal const string CoAuthors = "";
-    internal const string Contributors = "Gopher, Artur, AlchlcSystm";
+    internal const string Contributors = "Artur, AlchlcSystm";
     internal const string Company = "";
     internal const string Version = "0.1.1";
     internal const string DownloadLink = "";
