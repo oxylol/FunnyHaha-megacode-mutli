@@ -31,14 +31,21 @@ public class ConnectAckHandler : BaseClientPacketHandler
 
         SrLogger.LogMessage($"Connection acknowledged by server! (PlayerId: {packet.PlayerId})",
             SrLogger.LogTarget.Both);
-        
+
+        foreach (var player in packet.OtherPlayers)
+        {
+            SpawnPlayer(player);
+        }
+    }
+
+    private void SpawnPlayer(string id)
+    {
         var playerObject = Object.Instantiate(playerPrefab).GetComponent<NetworkPlayer>();
         playerObject.gameObject.SetActive(true);
-        // Temporary solution becaus no fix :3
-        playerObject.ID = "HOST";
-        playerObject.gameObject.name = "HOST";
-        playerObjects.Add("HOST", playerObject.gameObject);
-        playerManager.AddPlayer("HOST");
+        playerObject.ID = id;
+        playerObject.gameObject.name = id;
+        playerObjects.Add(id, playerObject.gameObject);
+        playerManager.AddPlayer(id);
         Object.DontDestroyOnLoad(playerObject);
     }
 }

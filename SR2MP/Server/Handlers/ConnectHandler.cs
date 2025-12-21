@@ -31,7 +31,8 @@ public class ConnectHandler : BasePacketHandler
         var ackPacket = new ConnectAckPacket
         {
             Type = (byte)PacketType.ConnectAck,
-            PlayerId = playerId
+            PlayerId = playerId,
+            OtherPlayers = Array.ConvertAll(playerManager.GetAllPlayers().ToArray(), input => input.PlayerId)
         };
 
         SendToClient(ackPacket, client);
