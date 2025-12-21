@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
 using SR2MP.Client.Models;
+using SR2MP.Packets.C2S;
+using SR2MP.Packets.Utils;
 using UnityEngine;
 
 namespace SR2MP.Client.Managers;
@@ -47,7 +49,45 @@ public class RemotePlayerManager
         }
         return false;
     }
-
+    public void SendPlayerUpdate(
+        UnityEngine.Vector3 position,
+        UnityEngine.Quaternion rotation,
+        float horizontalMovement = 0f,
+        float forwardMovement = 0f,
+        float yaw = 0f,
+        int airborneState = 0,
+        bool moving = false,
+        float horizontalSpeed = 0f,
+        float forwardSpeed = 0f,
+        bool sprinting = false)
+    {
+        // I dont know.
+        var playerId = Main.Client.IsConnected ? Main.Client.OwnPlayerId : Main.Server.IsRunning() ? "HOST" : "INVALID";
+        var updatePacket = new PlayerUpdatePacket
+        {
+            Type = (byte)PacketType.PlayerUpdate,
+            PlayerId = playerId,
+            Position = position,
+            Rotation = rotation,
+            HorizontalMovement = horizontalMovement,
+            ForwardMovement = forwardMovement,
+            Yaw = yaw,
+            AirborneState = airborneState,
+            Moving = moving,
+            HorizontalSpeed = horizontalSpeed,
+            ForwardSpeed = forwardSpeed,
+            Sprinting = sprinting
+        };
+        if (Main.Client.IsConnected)
+        {
+            Main.Client.SendPacket(updatePacket);
+        }
+        else if (Main.Server.IsRunning())
+        {
+            Main.Server.SendToAll(updatePacket);
+        }
+    }
+    
     public void UpdatePlayer(
         string playerId,
         Vector3 position,

@@ -1,7 +1,10 @@
-﻿using MelonLoader;
+﻿using Il2CppTMPro;
+using MelonLoader;
 using MelonLoader.Utils;
 using SR2E.Expansion;
+using SR2MP.Components;
 using SR2MP.Shared.Utils;
+using UnityEngine;
 
 namespace SR2MP;
 
@@ -19,5 +22,40 @@ public sealed class Main : SR2EExpansionV3
 
         Client = new Client.Client();
         Server = new Server.Server();
+    }
+
+    public override void OnSceneWasLoaded(int buildIndex, string sceneName)
+    {
+        switch (sceneName)
+        {
+            case "SystemCore":
+                MainThreadDispatcher.Initialize();
+                break;
+
+            case "MainMenuEnvironment":
+
+                playerPrefab = new GameObject("PLAYER");
+                playerPrefab.SetActive(false);
+                playerPrefab.transform.localScale = Vector3.one * 0.85f;
+                var networkComponent = playerPrefab.AddComponent<NetworkPlayer>();
+
+                var playerModel = Object.Instantiate(GameObject.Find("BeatrixMainMenu")).transform;
+                playerModel.parent = playerPrefab.transform;
+                playerModel.localPosition = Vector3.zero;
+                playerModel.localRotation = Quaternion.identity;
+                playerModel.localScale = Vector3.one;
+                
+                var name = new GameObject("Username")
+                {
+                    transform = { parent = playerPrefab.transform, localPosition = Vector3.up * 3 }
+                };
+                var textComponent = name.AddComponent<TextMeshPro>();
+
+                networkComponent.usernamePanel = textComponent;
+                
+                
+                Object.DontDestroyOnLoad(playerPrefab);
+                break;
+        }
     }
 }

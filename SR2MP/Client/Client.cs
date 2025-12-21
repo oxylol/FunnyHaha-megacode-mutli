@@ -18,7 +18,6 @@ public sealed class Client
     private volatile bool isConnected;
 
     private readonly ClientPacketManager packetManager;
-    private readonly RemotePlayerManager playerManager;
 
     public string OwnPlayerId { get; private set; } = string.Empty;
     public bool IsConnected => isConnected;

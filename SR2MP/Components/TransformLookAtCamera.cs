@@ -1,3 +1,4 @@
+using Il2CppTMPro;
 using MelonLoader;
 using UnityEngine;
 
@@ -10,7 +11,7 @@ public class TransformLookAtCamera : MonoBehaviour
 
     private bool isText;
 
-    void Start() => isText = targetTransform.GetComponent<TextMesh>();
+    void Start() => isText = targetTransform.GetComponent<TextMeshPro>();
     void Update()
     {
         targetTransform.LookAt(Camera.main.transform);

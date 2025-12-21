@@ -6,9 +6,9 @@ namespace SR2MP.Packets.C2S;
 
 public struct PlayerJoinPacket : IPacket
 {
-    private byte Type { get; set; }
-    private string PlayerId { get; set; }
-    private string PlayerName { get; set; }
+    public byte Type { get; set; }
+    public string PlayerId { get; set; }
+    public string PlayerName { get; set; }
 
     public readonly void Serialise(PacketWriter writer)
     {
