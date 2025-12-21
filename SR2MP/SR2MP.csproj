@@ -11,6 +11,12 @@
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
       <DebugType>embedded</DebugType>
+      <NoWarn>1701;1702;RCS1037</NoWarn>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <DebugSymbols>true</DebugSymbols>
+      <DebugType>embedded</DebugType>
+      <NoWarn>1701;1702;RCS1037</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
