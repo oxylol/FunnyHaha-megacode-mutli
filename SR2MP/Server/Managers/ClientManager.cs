@@ -4,7 +4,7 @@ using SR2MP.Server.Models;
 
 namespace SR2MP.Server.Managers;
 
-public class ClientManager
+public sealed class ClientManager
 {
     private readonly ConcurrentDictionary<string, ClientInfo> clients = new();
 
@@ -19,7 +19,7 @@ public class ClientManager
 
     public bool TryGetClient(IPEndPoint endPoint, out ClientInfo? client)
     {
-        string clientInfo = $"{endPoint.Address}:{endPoint.Port}";
+        var clientInfo = $"{endPoint.Address}:{endPoint.Port}";
         return TryGetClient(clientInfo, out client);
     }
 
@@ -29,9 +29,9 @@ public class ClientManager
         return client;
     }
 
-    public ClientInfo AddClient(IPEndPoint endPoint, string playerId)
+    public ClientInfo AddClient(IPEndPoint endPoint, long playerId)
     {
-        string clientInfo = $"{endPoint.Address}:{endPoint.Port}";
+        var clientInfo = $"{endPoint.Address}:{endPoint.Port}";
 
         var client = new ClientInfo(endPoint, playerId);
 
@@ -64,7 +64,7 @@ public class ClientManager
 
     public bool RemoveClient(IPEndPoint endPoint)
     {
-        string clientInfo = $"{endPoint.Address}:{endPoint.Port}";
+        var clientInfo = $"{endPoint.Address}:{endPoint.Port}";
         return RemoveClient(clientInfo);
     }
 
@@ -90,8 +90,7 @@ public class ClientManager
 
     public void RemoveTimedOutClients()
     {
-        var timedOut = GetTimedOutClients();
-        foreach (var client in timedOut)
+        foreach (var client in GetTimedOutClients())
         {
             RemoveClient(client.GetClientInfo());
         }

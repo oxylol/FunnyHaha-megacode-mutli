@@ -6,22 +6,21 @@ namespace SR2MP.Packets.Shared;
 // Do not rewrite this, the movement SFX comes in many materials and types (36 different sounds).
 // Il2CppMonomiPark.SlimeRancher.VFX.EnvironmentInteraction;
 // GroundCollisionMaterials.GroundCollisionMaterialType.X
-public struct MovementSoundPacket : IPacket
+public sealed class MovementSoundPacket : IPacket
 {
-    public byte Type { get; set; }
+    public PacketType Type => PacketType.MovementSound;
+
     public Vector3 Position { get; set; }
     public string CueName { get; set; }
 
-    public readonly void Serialise(PacketWriter writer)
+    public void SerialiseTo(PacketWriter writer)
     {
-        writer.WriteByte(Type);
         writer.WriteVector3(Position);
         writer.WriteString(CueName);
     }
 
-    public void Deserialise(PacketReader reader)
+    public void DeserialiseFrom(PacketReader reader)
     {
-        Type = reader.ReadByte();
         Position = reader.ReadVector3();
         CueName = reader.ReadString();
     }

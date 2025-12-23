@@ -5,7 +5,7 @@ using UnityEngine;
 namespace SR2MP.Components.Time;
 
 [RegisterTypeInIl2Cpp(false)]
-public class ForceTimeScale : MonoBehaviour
+public sealed class ForceTimeScale : MonoBehaviour
 {
     public float timeScale = 1f;
 

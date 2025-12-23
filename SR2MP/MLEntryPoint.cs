@@ -235,8 +235,8 @@ internal class MLEntrypoint : MelonMod
     {
         var background = new GameObject(name);
         background.transform.SetParent(canvasObj.transform);
-        background.transform.localScale = new Vector3(1, 1, 1);
-        background.transform.localPosition = new Vector3(0, 0, 0);
+        background.transform.localScale = Vector3.one;
+        background.transform.localPosition = Vector3.zero;
         background.transform.localRotation = Quaternion.identity;
         background.AddComponent<Image>().color = imgColor;
         background.AddComponent<RectTransform>().sizeDelta = new Vector2(Screen.currentResolution.width, Screen.currentResolution.height) / widthFactor;

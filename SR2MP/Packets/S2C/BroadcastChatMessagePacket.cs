@@ -2,26 +2,34 @@ using SR2MP.Packets.Utils;
 
 namespace SR2MP.Packets.S2C;
 
-public struct BroadcastChatMessagePacket : IPacket
+public sealed class BroadcastChatMessagePacket : IPacket
 {
-    public byte Type { get; set; }
-    public string PlayerId { get; set; }
-    public string Message { get; set; }
-    public long Timestamp { get; set; }
+    public PacketType Type => PacketType.BroadcastChatMessage;
 
-    public readonly void Serialise(PacketWriter writer)
+    public long PlayerId { get; private set; }
+    public long Timestamp { get; private set; }
+    public string Message { get; private set; }
+
+    public BroadcastChatMessagePacket() { }
+
+    public BroadcastChatMessagePacket(long playerId, long timestamp, string message)
     {
-        writer.WriteByte(Type);
-        writer.WriteString(PlayerId);
-        writer.WriteString(Message);
-        writer.WriteLong(Timestamp);
+        PlayerId = playerId;
+        Timestamp = timestamp;
+        Message = message;
     }
 
-    public void Deserialise(PacketReader reader)
+    public void SerialiseTo(PacketWriter writer)
     {
-        Type = reader.ReadByte();
-        PlayerId = reader.ReadString();
-        Message = reader.ReadString();
+        writer.WriteLong(PlayerId);
+        writer.WriteLong(Timestamp);
+        writer.WriteString(Message);
+    }
+
+    public void DeserialiseFrom(PacketReader reader)
+    {
+        PlayerId = reader.ReadLong();
         Timestamp = reader.ReadLong();
+        Message = reader.ReadString();
     }
 }

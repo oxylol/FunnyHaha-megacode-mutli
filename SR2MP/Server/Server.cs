@@ -10,12 +10,11 @@ public sealed class Server
     private readonly NetworkManager networkManager;
     private readonly ClientManager clientManager;
     private readonly PacketManager packetManager;
+
     private Timer? timeoutTimer;
-    public int GetClientCount() => clientManager.ClientCount;
-    public bool IsRunning() => networkManager.IsRunning;
-    
+
     public event Action? OnServerStarted;
-    
+
     public Server()
     {
         networkManager = new NetworkManager();
@@ -25,6 +24,10 @@ public sealed class Server
         networkManager.OnDataReceived += OnDataReceived;
         clientManager.OnClientRemoved += OnClientRemoved;
     }
+
+    public int GetClientCount() => clientManager.ClientCount;
+
+    public bool IsRunning() => networkManager.IsRunning;
 
     public void Start(int port, bool enableIPv6)
     {
@@ -48,7 +51,7 @@ public sealed class Server
         }
     }
 
-    private void OnDataReceived(byte[] data, System.Net.IPEndPoint clientEP)
+    private void OnDataReceived(byte[] data, IPEndPoint clientEP)
     {
         SrLogger.LogPacketSize($"Received {data.Length} bytes from Client!",
             $"Received {data.Length} bytes from {clientEP}.");
@@ -63,17 +66,13 @@ public sealed class Server
         }
     }
 
-    private void OnClientRemoved(Models.ClientInfo client)
+    private void OnClientRemoved(ClientInfo client)
     {
-        var leavePacket = new PlayerLeavePacket
-        {
-            Type = (byte)PacketType.BroadcastPlayerLeave,
-            PlayerId = client.PlayerId
-        };
+        var leavePacket = new BroadcastPlayerLeavePacket(client.PlayerId);
 
         using var writer = new PacketWriter();
-        leavePacket.Serialise(writer);
-        byte[] data = writer.ToArray();
+        leavePacket.SerialiseTo(writer);
+        var data = writer.ToArray();
 
         foreach (var otherClient in clientManager.GetAllClients())
         {
@@ -105,14 +104,11 @@ public sealed class Server
             timeoutTimer?.Dispose();
             timeoutTimer = null;
 
-            var closePacket = new ClosePacket
-            {
-                Type = (byte)PacketType.Close
-            };
+            var closePacket = new ClosePacket();
 
             using var writer = new PacketWriter();
-            closePacket.Serialise(writer);
-            byte[] data = writer.ToArray();
+            closePacket.SerialiseTo(writer);
+            var data = writer.ToArray();
 
             foreach (var client in clientManager.GetAllClients())
             {
@@ -136,25 +132,24 @@ public sealed class Server
             SrLogger.LogError($"Error during server shutdown: {ex}", SrLogger.LogTarget.Both);
         }
     }
-    
-    
-    public void SendToClient(IPacket packet, IPEndPoint endPoint)
+
+    public void SendToClient<T>(T packet, IPEndPoint endPoint) where T : IPacket
     {
         using var writer = new PacketWriter();
-        packet.Serialise(writer);
+        packet.SerialiseTo(writer);
         networkManager.Send(writer.ToArray(), endPoint);
     }
 
-    public void SendToClient(IPacket packet, ClientInfo client)
+    public void SendToClient<T>(T packet, ClientInfo client) where T : IPacket
     {
         SendToClient(packet, client.EndPoint);
     }
 
-    public void SendToAll(IPacket packet)
+    public void SendToAll<T>(T packet) where T : IPacket
     {
         using var writer = new PacketWriter();
-        packet.Serialise(writer);
-        byte[] data = writer.ToArray();
+        packet.SerialiseTo(writer);
+        var data = writer.ToArray();
 
         foreach (var client in clientManager.GetAllClients())
         {
@@ -162,11 +157,11 @@ public sealed class Server
         }
     }
 
-    public void SendToAllExcept(IPacket packet, string excludedClientInfo)
+    public void SendToAllExcept<T>(T packet, string excludedClientInfo) where T : IPacket
     {
         using var writer = new PacketWriter();
-        packet.Serialise(writer);
-        byte[] data = writer.ToArray();
+        packet.SerialiseTo(writer);
+        var data = writer.ToArray();
 
         foreach (var client in clientManager.GetAllClients())
         {
@@ -177,9 +172,9 @@ public sealed class Server
         }
     }
 
-    public void SendToAllExcept(IPacket packet, IPEndPoint excludeEndPoint)
+    public void SendToAllExcept<T>(T packet, IPEndPoint excludeEndPoint) where T : IPacket
     {
-        string clientInfo = $"{excludeEndPoint.Address}:{excludeEndPoint.Port}";
+        var clientInfo = $"{excludeEndPoint.Address}:{excludeEndPoint.Port}";
         SendToAllExcept(packet, clientInfo);
     }
 }

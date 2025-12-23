@@ -4,23 +4,30 @@ namespace SR2MP.Packets.Shared;
 
 // We should make the PlayerId come from the endpoint of the sender, if possible
 
-public struct PlayerJoinPacket : IPacket
+public sealed class PlayerJoinPacket : IPacket
 {
-    public byte Type { get; set; }
-    public string PlayerId { get; set; }
-    public string PlayerName { get; set; }
+    public PacketType Type => PacketType.PlayerJoin;
 
-    public readonly void Serialise(PacketWriter writer)
+    public long PlayerId { get; private set; }
+    public string PlayerName { get; private set; } = string.Empty;
+
+    public PlayerJoinPacket() { }
+
+    public PlayerJoinPacket(long playerId, string playerName)
     {
-        writer.WriteByte(Type);
-        writer.WriteString(PlayerId);
-        writer.WriteString(PlayerName ?? "No Name Set");
+        PlayerId = playerId;
+        PlayerName = playerName ?? "No Name Set";
     }
 
-    public void Deserialise(PacketReader reader)
+    public void SerialiseTo(PacketWriter writer)
     {
-        Type = reader.ReadByte();
-        PlayerId = reader.ReadString();
+        writer.WriteLong(PlayerId);
+        writer.WriteString(PlayerName);
+    }
+
+    public void DeserialiseFrom(PacketReader reader)
+    {
+        PlayerId = reader.ReadLong();
         PlayerName = reader.ReadString();
     }
 }

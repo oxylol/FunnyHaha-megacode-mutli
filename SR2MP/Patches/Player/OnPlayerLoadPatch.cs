@@ -13,7 +13,7 @@ public static class OnPlayerLoadPatch
         if (Main.Server.IsRunning())
         {
             var networkPlayer = __instance.AddComponent<NetworkPlayer>();
-            networkPlayer.ID = "HOST";
+            networkPlayer.ID = 0;
             networkPlayer.IsLocal = true;
         }
         else if (Main.Client.IsConnected)
@@ -34,7 +34,7 @@ public static class OnPlayerLoadPatch
             Main.Server.OnServerStarted += () =>
             {
                 var networkPlayer = __instance.AddComponent<NetworkPlayer>();
-                networkPlayer.ID = "HOST";
+                networkPlayer.ID = 0;
                 networkPlayer.IsLocal = true;
             };
         }

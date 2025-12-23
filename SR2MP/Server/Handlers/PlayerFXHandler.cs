@@ -3,26 +3,26 @@ using Il2Cpp;
 using SR2MP.Server.Managers;
 using SR2MP.Packets.Utils;
 using UnityEngine;
+using SR2MP.Shared.Managers;
 
 namespace SR2MP.Server.Handlers;
 
 [PacketHandler((byte)PacketType.PlayerFX)]
-public class PlayerFXHandler : BasePacketHandler
+public sealed class PlayerFXHandler : BasePacketHandler
 {
     public PlayerFXHandler(NetworkManager networkManager, ClientManager clientManager)
         : base(networkManager, clientManager) { }
 
-    public override void Handle(byte[] data, IPEndPoint senderEndPoint)
+    public override void Handle(PacketReader reader, IPEndPoint senderEndPoint)
     {
-        using var reader = new PacketReader(data);
-        var packet = reader.ReadPacket<PlayerFXPacket>();
+        var packet = reader.ReadNetObject<PlayerFXPacket>();
 
         if (!IsPlayerSoundDictionary[packet.FX])
         {
             var fxPrefab = fxManager.playerFXMap[packet.FX];
 
             handlingPacket = true;
-            var fxObject = FXHelpers.SpawnAndPlayFX(fxPrefab, packet.Position, Quaternion.identity);
+            FXHelpers.SpawnAndPlayFX(fxPrefab, packet.Position, Quaternion.identity);
             handlingPacket = false;
         }
         else
@@ -30,7 +30,7 @@ public class PlayerFXHandler : BasePacketHandler
             var cue = fxManager.playerAudioCueMap[packet.FX];
             if (ShouldPlayerSoundBeTransientDictionary[packet.FX])
             {
-                fxManager.PlayTransientAudio(cue, playerObjects[packet.Player].transform.position);
+                RemoteFXManager.PlayTransientAudio(cue, playerObjects[packet.Player].transform.position);
             }
             else
             {
@@ -42,8 +42,8 @@ public class PlayerFXHandler : BasePacketHandler
                 playerAudio.Play();
             }
         }
-        
-        
+
+
         Main.Server.SendToAllExcept(packet, senderEndPoint);
     }
 }

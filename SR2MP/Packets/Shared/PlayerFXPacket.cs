@@ -22,34 +22,40 @@ public struct PlayerFXPacket : IPacket
         VacShootSound,
     }
 
-    
-    
-    public byte Type { get; set; }
-    public PlayerFXType FX { get; set; }
-    
-    // For visual stuff
-    public Vector3 Position { get; set; }
-    
-    // For sound only
-    public string Player { get; set; }
-    
-    public readonly void Serialise(PacketWriter writer)
+    public readonly PacketType Type => PacketType.PlayerFX;
+
+    public PlayerFXType FX { get; private set; }
+    public Vector3 Position { get; private set; } // For visual stuff
+    public long Player { get; private set; } // For sound only
+
+    public PlayerFXPacket(PlayerFXType fx, long player) : this(fx, default, player) { }
+
+    public PlayerFXPacket(PlayerFXType fx, Vector3 position) : this(fx, position, -1) { }
+
+    public PlayerFXPacket(PlayerFXType fx, Vector3 position, long player)
     {
-        writer.WriteByte(Type);
+        FX = fx;
+        Position = position;
+        Player = player;
+    }
+
+    public readonly void SerialiseTo(PacketWriter writer)
+    {
         writer.WriteEnum(FX);
+
         if (!IsPlayerSoundDictionary[FX])
             writer.WriteVector3(Position);
         else
-            writer.WriteString(Player);
+            writer.WriteLong(Player);
     }
 
-    public void Deserialise(PacketReader reader)
+    public void DeserialiseFrom(PacketReader reader)
     {
-        Type = reader.ReadByte();
         FX = reader.ReadEnum<PlayerFXType>();
+
         if (!IsPlayerSoundDictionary[FX])
             Position = reader.ReadVector3();
         else
-            Player = reader.ReadString();
+            Player = reader.ReadLong();
     }
 }

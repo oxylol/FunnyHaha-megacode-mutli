@@ -5,30 +5,23 @@ using SR2MP.Packets.Utils;
 namespace SR2MP.Server.Handlers;
 
 [PacketHandler((byte)PacketType.PlayerLeave)]
-public class PlayerLeaveHandler : BasePacketHandler
+public sealed class PlayerLeaveHandler : BasePacketHandler
 {
     public PlayerLeaveHandler(NetworkManager networkManager, ClientManager clientManager)
         : base(networkManager, clientManager) { }
 
-    public override void Handle(byte[] data, IPEndPoint senderEndPoint)
+    public override void Handle(PacketReader reader, IPEndPoint senderEndPoint)
     {
-        using var reader = new PacketReader(data);
-        reader.Skip(1);
+        var playerId = reader.ReadLong();
 
-        string playerId = reader.ReadString();
-
-        string clientInfo = $"{senderEndPoint.Address}:{senderEndPoint.Port}";
+        var clientInfo = $"{senderEndPoint.Address}:{senderEndPoint.Port}";
 
         SrLogger.LogMessage($"Player leave request received (PlayerId: {playerId})",
             $"Player leave request from {clientInfo} (PlayerId: {playerId})");
 
         if (clientManager.RemoveClient(clientInfo))
         {
-            var leavePacket = new PlayerLeavePacket
-            {
-                Type = (byte)PacketType.BroadcastPlayerLeave,
-                PlayerId = playerId
-            };
+            var leavePacket = new PlayerLeavePacket(playerId);
 
             Main.Server.SendToAll(leavePacket);
 

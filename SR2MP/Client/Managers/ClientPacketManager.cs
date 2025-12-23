@@ -5,7 +5,7 @@ using SR2MP.Shared.Utils;
 
 namespace SR2MP.Client.Managers;
 
-public class ClientPacketManager
+public sealed class ClientPacketManager
 {
     private readonly Dictionary<byte, IClientPacketHandler> handlers = new();
     private readonly Client client;
@@ -22,19 +22,19 @@ public class ClientPacketManager
         var assembly = Assembly.GetExecutingAssembly();
         var handlerTypes = assembly.GetTypes()
             .Where(type => type.GetCustomAttribute<PacketHandlerAttribute>() != null
-                     && typeof(IClientPacketHandler).IsAssignableFrom(type)
-                     && !type.IsAbstract);
+                            && typeof(IClientPacketHandler).IsAssignableFrom(type)
+                            && !type.IsAbstract);
 
         foreach (var type in handlerTypes)
         {
             var attribute = type.GetCustomAttribute<PacketHandlerAttribute>();
-            if (attribute == null) continue;
+
+            if (attribute == null)
+                continue;
 
             try
             {
-                var handler = Activator.CreateInstance(type, client, playerManager) as IClientPacketHandler;
-
-                if (handler != null)
+                if (Activator.CreateInstance(type, client, playerManager) is IClientPacketHandler handler)
                 {
                     handlers[attribute.PacketType] = handler;
                     SrLogger.LogMessage($"Registered client handler: {type.Name} for packet type {attribute.PacketType}", SrLogger.LogTarget.Both);
@@ -57,13 +57,14 @@ public class ClientPacketManager
             return;
         }
 
-        byte packetType = data[0];
+        using var reader = new PacketReader(data);
+        var packetType = reader.ReadByte();
 
         if (handlers.TryGetValue(packetType, out var handler))
         {
             try
             {
-                MainThreadDispatcher.Enqueue(() => handler.Handle(data));
+                MainThreadDispatcher.Enqueue(() => handler.Handle(reader));
             }
             catch (Exception ex)
             {

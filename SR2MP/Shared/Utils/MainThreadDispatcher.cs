@@ -5,7 +5,7 @@ using MelonLoader;
 namespace SR2MP.Shared.Utils;
 
 [RegisterTypeInIl2Cpp(false)]
-public class MainThreadDispatcher : MonoBehaviour
+public sealed class MainThreadDispatcher : MonoBehaviour
 {
     public static MainThreadDispatcher Instance { get; private set; }
 
@@ -13,7 +13,8 @@ public class MainThreadDispatcher : MonoBehaviour
 
     public static void Initialize()
     {
-        if (Instance != null) return;
+        if (Instance != null)
+            return;
 
         var obj = new GameObject("SR2MP_MainThreadDispatcher");
         Instance = obj.AddComponent<MainThreadDispatcher>();

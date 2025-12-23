@@ -2,9 +2,9 @@ using UnityEngine;
 
 namespace SR2MP.Client.Models;
 
-public class RemotePlayer
+public sealed class RemotePlayer
 {
-    public string PlayerId { get; set; }
+    public long PlayerId { get; set; }
     public Vector3 Position { get; set; }
     public float Rotation { get; set; }
     public DateTime LastUpdate { get; set; }
@@ -22,7 +22,7 @@ public class RemotePlayer
     public float LookY { get; set; }
     public float LastLookY { get; set; }
 
-    public RemotePlayer(string playerId)
+    public RemotePlayer(long playerId)
     {
         PlayerId = playerId;
         LastUpdate = DateTime.UtcNow;

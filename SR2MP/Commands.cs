@@ -36,7 +36,7 @@ public sealed class ConnectCommand : SR2ECommand
             return false;
         }
 
-        string ip = args[0];
+        var ip = args[0];
 
         // todo: Can probably be removed with the IPv6 stuff (or fixed)
         if (ip.StartsWith("[") && ip.EndsWith("]"))

@@ -1,14 +1,14 @@
 using SR2MP.Packets.Utils;
 
-namespace SR2MP.Packets.C2S;
+namespace SR2MP.Packets.S2C;
 
-public struct ConnectPacket : IPacket
+public struct BroadcastPlayerLeavePacket : IPacket
 {
-    public readonly PacketType Type => PacketType.Connect;
+    public readonly PacketType Type => PacketType.BroadcastPlayerLeave;
 
     public long PlayerId { get; private set; }
 
-    public ConnectPacket(long playerId) => PlayerId = playerId;
+    public BroadcastPlayerLeavePacket(long playerId) => PlayerId = playerId;
 
     public readonly void SerialiseTo(PacketWriter writer) => writer.WriteLong(PlayerId);
 

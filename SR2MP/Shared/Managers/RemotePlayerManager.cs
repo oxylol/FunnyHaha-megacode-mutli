@@ -1,27 +1,28 @@
 using System.Collections.Concurrent;
 using SR2MP.Client.Models;
-using SR2MP.Packets.Utils;
 using UnityEngine;
 
 namespace SR2MP.Shared.Managers;
 
-public class RemotePlayerManager
+public sealed class RemotePlayerManager
 {
-    private readonly ConcurrentDictionary<string, RemotePlayer> players = new();
+    private readonly ConcurrentDictionary<long, RemotePlayer> players = new();
 
-    public event Action<string>? OnPlayerAdded;
-    public event Action<string>? OnPlayerRemoved;
-    public event Action<string, RemotePlayer>? OnPlayerUpdated;
+    public event Action<long>? OnPlayerAdded;
+    public event Action<long>? OnPlayerRemoved;
+    public event Action<long, RemotePlayer>? OnPlayerUpdated;
 
     public int PlayerCount => players.Count;
 
-    public RemotePlayer? GetPlayer(string playerId)
+    public RemotePlayer GetOrAddPlayer(long playerId) => GetPlayer(playerId) ?? AddPlayer(playerId);
+
+    public RemotePlayer? GetPlayer(long playerId)
     {
         players.TryGetValue(playerId, out var player);
         return player;
     }
 
-    public RemotePlayer AddPlayer(string playerId)
+    public RemotePlayer AddPlayer(long playerId)
     {
         var player = new RemotePlayer(playerId);
 
@@ -38,18 +39,18 @@ public class RemotePlayerManager
         }
     }
 
-    public bool RemovePlayer(string playerId)
+    public bool RemovePlayer(long playerId)
     {
-        if (players.TryRemove(playerId, out var player))
-        {
-            SrLogger.LogMessage($"Remote player removed: {playerId}", SrLogger.LogTarget.Both);
-            OnPlayerRemoved?.Invoke(playerId);
-            return true;
-        }
-        return false;
+        if (!players.TryRemove(playerId, out var player))
+            return false;
+
+        SrLogger.LogMessage($"Remote player removed: {playerId}", SrLogger.LogTarget.Both);
+        OnPlayerRemoved?.Invoke(playerId);
+        return true;
     }
-    public void SendPlayerUpdate(
-        UnityEngine.Vector3 position,
+
+    public static void SendPlayerUpdate(
+        Vector3 position,
         float rotation,
         float horizontalMovement = 0f,
         float forwardMovement = 0f,
@@ -62,28 +63,14 @@ public class RemotePlayerManager
         float lookY = 0f)
     {
         // I dont know.
-        var playerId = Main.Client.IsConnected ? Main.Client.OwnPlayerId : Main.Server.IsRunning() ? "HOST" : "INVALID";
-        var updatePacket = new PlayerUpdatePacket
-        {
-            Type = (byte)PacketType.PlayerUpdate,
-            PlayerId = playerId,
-            Position = position,
-            Rotation = rotation,
-            HorizontalMovement = horizontalMovement,
-            ForwardMovement = forwardMovement,
-            Yaw = yaw,
-            AirborneState = airborneState,
-            Moving = moving,
-            HorizontalSpeed = horizontalSpeed,
-            ForwardSpeed = forwardSpeed,
-            Sprinting = sprinting,
-            LookY = lookY
-        };
+        var playerId = Main.Client.IsConnected ? Main.Client.OwnPlayerId : (Main.Server.IsRunning() ? 0 : -1); // 0 = Host, -1 = Invalid
+
+        var updatePacket = new PlayerUpdatePacket(playerId, position, airborneState, yaw, rotation, lookY, horizontalMovement, forwardMovement, horizontalSpeed, forwardSpeed, moving, sprinting);
         Main.SendToAllOrServer(updatePacket);
     }
-    
+
     public void UpdatePlayer(
-        string playerId,
+        long playerId,
         Vector3 position,
         float rotation,
         float horizontalMovement,
@@ -96,23 +83,23 @@ public class RemotePlayerManager
         bool sprinting,
         float lookY)
     {
-        if (players.TryGetValue(playerId, out var player))
-        {
-            player.Position = position;
-            player.Rotation = rotation;
-            player.HorizontalMovement = horizontalMovement;
-            player.ForwardMovement = forwardMovement;
-            player.Yaw = yaw;
-            player.AirborneState = airborneState;
-            player.Moving = moving;
-            player.HorizontalSpeed = horizontalSpeed;
-            player.ForwardSpeed = forwardSpeed;
-            player.Sprinting = sprinting;
-            player.LastLookY = player.LookY;
-            player.LookY = lookY;
-            player.LastUpdate = DateTime.UtcNow;
-            OnPlayerUpdated?.Invoke(playerId, player);
-        }
+        if (!players.TryGetValue(playerId, out var player))
+            return;
+
+        player.Position = position;
+        player.Rotation = rotation;
+        player.HorizontalMovement = horizontalMovement;
+        player.ForwardMovement = forwardMovement;
+        player.Yaw = yaw;
+        player.AirborneState = airborneState;
+        player.Moving = moving;
+        player.HorizontalSpeed = horizontalSpeed;
+        player.ForwardSpeed = forwardSpeed;
+        player.Sprinting = sprinting;
+        player.LastLookY = player.LookY;
+        player.LookY = lookY;
+        player.LastUpdate = DateTime.UtcNow;
+        OnPlayerUpdated?.Invoke(playerId, player);
     }
 
     public List<RemotePlayer> GetAllPlayers()

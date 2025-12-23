@@ -1,10 +1,7 @@
 ﻿using Il2Cpp;
 using Il2CppTMPro;
 using MelonLoader;
-using MelonLoader.Utils;
 using SR2E.Expansion;
-using SR2E.Utils;
-using SR2MP.Components;
 using SR2MP.Components.FX;
 using SR2MP.Components.Player;
 using SR2MP.Components.Time;
@@ -16,7 +13,15 @@ namespace SR2MP;
 
 public sealed class Main : SR2EExpansionV3
 {
-    public static void SendToAllOrServer(IPacket packet)
+    public static Client.Client Client { get; private set; }
+    public static Server.Server Server { get; private set; }
+
+    public static string Username => preferences.GetEntry<string>("username").Value;
+    public static bool PacketSizeLogging => preferences.GetEntry<bool>("packet_size_log").Value;
+
+    private static MelonPreferences_Category preferences;
+
+    public static void SendToAllOrServer<T>(T packet) where T : IPacket
     {
         if (Client.IsConnected)
         {
@@ -28,12 +33,6 @@ public sealed class Main : SR2EExpansionV3
             Server.SendToAll(packet);
         }
     }
-    
-    public static Client.Client Client { get; private set; }
-    public static Server.Server Server { get; private set; }
-    static MelonPreferences_Category preferences;
-    public static string Username => preferences.GetEntry<string>("username").Value;
-    public static bool PacketSizeLogging => preferences.GetEntry<bool>("packet_size_log").Value;
 
     public override void OnLateInitializeMelon()
     {
@@ -50,43 +49,40 @@ public sealed class Main : SR2EExpansionV3
         switch (sceneName)
         {
             case "SystemCore":
+            {
                 MainThreadDispatcher.Initialize();
-                
+
                 var forceTimeScale = new GameObject("SR2MP_TimeScale").AddComponent<ForceTimeScale>();
                 Object.DontDestroyOnLoad(forceTimeScale.gameObject);
                 break;
-
+            }
             case "MainMenuEnvironment":
+            {
                 playerPrefab = new GameObject("PLAYER");
                 playerPrefab.SetActive(false);
                 playerPrefab.transform.localScale = Vector3.one * 0.85f;
-                
+
                 var audio = playerPrefab.AddComponent<SECTR_PointSource>();
                 audio.instance = new SECTR_AudioCueInstance();
-                
-                var networkComponent = playerPrefab.AddComponent<NetworkPlayer>();
 
                 var playerModel = Object.Instantiate(GameObject.Find("BeatrixMainMenu")).transform;
-                playerModel.parent = playerPrefab.transform;
+                playerModel.parent.SetParent(playerPrefab.transform);
                 playerModel.localPosition = Vector3.zero;
                 playerModel.localRotation = Quaternion.identity;
                 playerModel.localScale = Vector3.one;
-                
-                var name = new GameObject("Username")
-                {
-                    transform = { parent = playerPrefab.transform, localPosition = Vector3.up * 3 }
-                };
 
-                
-                var textComponent = name.AddComponent<TextMeshPro>();
+                var name = new GameObject("Username");
+                name.transform.SetParent(playerPrefab.transform);
+                name.transform.localPosition = Vector3.up * 3;
 
-                networkComponent.usernamePanel = textComponent;
+                playerPrefab.AddComponent<NetworkPlayer>().usernamePanel = name.AddComponent<TextMeshPro>();
 
                 var footstepFX = new GameObject("Footstep") { transform = { parent = playerPrefab.transform } };
                 playerPrefab.AddComponent<NetworkPlayerFootstep>().spawnAtTransform = footstepFX.transform;
-                
+
                 Object.DontDestroyOnLoad(playerPrefab);
                 break;
+            }
         }
     }
 }

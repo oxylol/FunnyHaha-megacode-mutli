@@ -4,18 +4,13 @@ namespace SR2MP.Packets.Shared;
 
 public struct WorldTimePacket : IPacket
 {
-    public byte Type { get; set; }
-    public double Time { get; set; }
+    public readonly PacketType Type => PacketType.WorldTime;
 
-    public readonly void Serialise(PacketWriter writer)
-    {
-        writer.WriteByte(Type);
-        writer.WriteDouble(Time);
-    }
+    public double Time { get; private set; }
 
-    public void Deserialise(PacketReader reader)
-    {
-        Type = reader.ReadByte();
-        Time = reader.ReadDouble();
-    }
+    public WorldTimePacket(double time) => Time = time;
+
+    public readonly void SerialiseTo(PacketWriter writer) => writer.WriteDouble(Time);
+
+    public void DeserialiseFrom(PacketReader reader) => Time = reader.ReadDouble();
 }

@@ -21,4 +21,5 @@ public enum PacketType : byte
     PlayerFX = 21,                // Both Ways                                                                          On Player FX Play
     MovementSound = 22,           // Both Ways                                                                          On Movement SoundPlay
     CurrencyAdjust = 23,          // Both Ways                                                                          On Plort sell
+    ClientHandshake = 24,         // Client -> Server                                                                   On player join (honestly should probably merge with PlayerJoin)
 }

@@ -6,16 +6,16 @@ using UnityEngine;
 namespace SR2MP.Components.Utils;
 
 [RegisterTypeInIl2Cpp(false)]
-public class TransformLookAtCamera : MonoBehaviour
+public sealed class TransformLookAtCamera : MonoBehaviour
 {
     public Transform targetTransform;
 
     private bool isText;
-
     private Camera playerCamera;
 
-    void Start() => isText = targetTransform.GetComponent<TextMeshPro>();
-    void Update()
+    public void Start() => isText = targetTransform.GetComponent<TextMeshPro>();
+
+    public void Update()
     {
         if (!playerCamera)
         {
@@ -24,12 +24,10 @@ public class TransformLookAtCamera : MonoBehaviour
         }
         if (!targetTransform)
             return;
-        
+
         targetTransform.LookAt(playerCamera.transform);
 
         if (isText)
-        {
             targetTransform.Rotate(0, 180, 0);
-        }
     }
 }

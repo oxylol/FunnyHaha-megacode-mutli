@@ -6,16 +6,15 @@ using UnityEngine;
 namespace SR2MP.Client.Handlers;
 
 [PacketHandler((byte)PacketType.PlayerFX)]
-public class PlayerFXHandler : BaseClientPacketHandler
+public sealed class PlayerFXHandler : BaseClientPacketHandler
 {
     public PlayerFXHandler(Client client, RemotePlayerManager playerManager)
         : base(client, playerManager) { }
 
-    public override void Handle(byte[] data)
+    public override void Handle(PacketReader reader)
     {
-        using var reader = new PacketReader(data);
-        var packet = reader.ReadPacket<PlayerFXPacket>();
-        
+        var packet = reader.ReadNetObject<PlayerFXPacket>();
+
         SrLogger.LogMessage($"Received FX: {packet.FX}");
 
         if (!IsPlayerSoundDictionary[packet.FX])
@@ -33,7 +32,7 @@ public class PlayerFXHandler : BaseClientPacketHandler
             var cue = fxManager.playerAudioCueMap[packet.FX];
             if (ShouldPlayerSoundBeTransientDictionary[packet.FX])
             {
-                fxManager.PlayTransientAudio(cue, playerObjects[packet.Player].transform.position);
+                RemoteFXManager.PlayTransientAudio(cue, playerObjects[packet.Player].transform.position);
             }
             else
             {

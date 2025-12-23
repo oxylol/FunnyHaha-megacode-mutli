@@ -1,35 +1,85 @@
 using System.Text;
 using UnityEngine;
+using System.Runtime.CompilerServices;
 
 namespace SR2MP.Packets.Utils;
 
-public class PacketWriter : IDisposable
+public sealed class PacketWriter : IDisposable
 {
-    private readonly MemoryStream stream;
-    private readonly BinaryWriter writer;
+    private readonly MemoryStream _stream;
+    private readonly BinaryWriter _writer;
+
+    private byte _currentPackingByte;
+    private int _currentBitIndex;
 
     public PacketWriter()
     {
-        stream = new MemoryStream();
-        writer = new BinaryWriter(stream, Encoding.UTF8);
+        _stream = new MemoryStream();
+        _writer = new BinaryWriter(_stream, Encoding.UTF8);
     }
 
-    public void WriteByte(byte value) => writer.Write(value);
+    // ALWAYS call this before starting a sequence of bools! Otherwise the data becomes ineligible or out of order!
+    public void ResetPackingBools()
+    {
+        _currentPackingByte = 0;
+        _currentBitIndex = 0;
+    }
 
-    public void WriteInt(int value) => writer.Write(value);
-    public void WriteLong(long value) => writer.Write(value);
+    public void WritePackedBool(bool value)
+    {
+        if (value)
+            _currentPackingByte |= (byte)(1 << _currentBitIndex);
 
-    public void WriteFloat(float value) => writer.Write(value);
-    
-    public void WriteDouble(double value) => writer.Write(value);
+        if (_currentBitIndex < 8)
+            return;
 
-    public void WriteString(string value) => writer.Write(value);
+        _writer.Write(_currentPackingByte);
+        ResetPackingBools();
+    }
 
-    public void WriteBool(bool value) => writer.Write(value);
+    // Call this immediately after you finish writing your last bool! It ensures that ALL of the data is sent!
+    public void EndPackingBools()
+    {
+        if (_currentBitIndex > 0)
+            _writer.Write(_currentPackingByte);
 
-    public void WritePacket(IPacket value) => value.Serialise(this);
+        ResetPackingBools();
+    }
 
-    public void WriteEnum(Enum value) => Write(Convert.ChangeType(value, Enum.GetUnderlyingType(value.GetType())));
+    public void WriteByte(byte value) => _writer.Write(value);
+
+    public void WriteInt(int value) => _writer.Write(value);
+
+    public void WriteLong(long value) => _writer.Write(value);
+
+    public void WriteFloat(float value) => _writer.Write(value);
+
+    public void WriteDouble(double value) => _writer.Write(value);
+
+    public void WriteString(string value, int maxChars = 20, bool truncate = false)
+    {
+        value ??= string.Empty; // Null safety
+
+        if (value.Length > maxChars)
+        {
+            if (truncate)
+                value = value[..maxChars];
+            else
+                throw new IOException("String too long!");
+        }
+
+        _writer.Write(value);
+    }
+
+    public void WriteBool(bool value) => _writer.Write(value);
+
+    public void WritePacket<T>(in T value) where T : IPacket
+    {
+        _writer.Write((byte)value.Type);
+        value.SerialiseTo(this);
+    }
+
+    public void WriteNetObject<T>(in T value) where T : INetObject => value.SerialiseTo(this);
 
     public void WriteVector3(Vector3 value)
     {
@@ -46,9 +96,66 @@ public class PacketWriter : IDisposable
         WriteFloat(value.w);
     }
 
+    public void WritePackedULong(ulong value)
+    {
+        while (value > 0x7F)
+        {
+            _writer.Write((byte)((value & 0x7F) | 0x80));
+            value >>= 7;
+        }
+
+        _writer.Write((byte)value);
+    }
+
+    public void WritePackedUInt(uint value)
+    {
+        while (value > 0x7F)
+        {
+            _writer.Write((byte)((value & 0x7F) | 0x80));
+            value >>= 7;
+        }
+
+        _writer.Write((byte)value);
+    }
+
+    public void WritePackedLong(long value) => WritePackedULong((ulong)value);
+
+    public void WritePackedInt(int value) => WritePackedUInt((uint)value);
+
+    public void WriteEnum<T>(T value) where T : struct, Enum
+    {
+        var size = Unsafe.SizeOf<T>();
+
+        switch (size)
+        {
+            case 1:
+            {
+                _writer.Write(Unsafe.As<T, byte>(ref value));
+                break;
+            }
+            case 2:
+            {
+                _writer.Write(Unsafe.As<T, ushort>(ref value));
+                break;
+            }
+            case 4:
+            {
+                WritePackedUInt(Unsafe.As<T, uint>(ref value));
+                break;
+            }
+            case 8:
+            {
+                WritePackedULong(Unsafe.As<T, ulong>(ref value));
+                break;
+            }
+            default:
+                throw new ArgumentException($"Enum size {size} not supported");
+        }
+    }
+
     public void WriteArray<T>(T[] array, Action<PacketWriter, T> writer)
     {
-        WriteInt(array.Length);
+        WritePackedInt(array.Length);
 
         for (var i = 0; i < array.Length; i++)
             writer(this, array[i]);
@@ -56,7 +163,7 @@ public class PacketWriter : IDisposable
 
     public void WriteList<T>(List<T> list, Action<PacketWriter, T> writer)
     {
-        WriteInt(list.Count);
+        WritePackedInt(list.Count);
 
         for (var i = 0; i < list.Count; i++)
             writer(this, list[i]);
@@ -64,7 +171,7 @@ public class PacketWriter : IDisposable
 
     public void WriteDictionary<TKey, TValue>(Dictionary<TKey, TValue> dict, Action<PacketWriter, TKey> keyWriter, Action<PacketWriter, TValue> valueWriter) where TKey : notnull
     {
-        WriteInt(dict.Count);
+        WritePackedInt(dict.Count);
 
         foreach (var (key, value) in dict)
         {
@@ -73,41 +180,12 @@ public class PacketWriter : IDisposable
         }
     }
 
-    // Do NOT use this to serialise values! Use concrete methods above!
-    private void Write(object value)
-    {
-        if (value is null)
-            throw new ArgumentNullException(nameof(value));
-        else if (value is byte @byte)
-            WriteByte(@byte);
-        else if (value is int @int)
-            WriteInt(@int);
-        else if (value is long @long)
-            WriteLong(@long);
-        else if (value is float @float)
-            WriteFloat(@float);
-        else if (value is double @double)
-            WriteDouble(@double);
-        else if (value is string @string)
-            WriteString(@string);
-        else if (value is bool @bool)
-            WriteBool(@bool);
-        else if (value is IPacket packet)
-            WritePacket(packet);
-        else if (value is Enum @enum)
-            WriteEnum(@enum);
-        else if (value is Vector3 vector3)
-            WriteVector3(vector3);
-        else if (value is Quaternion quaternion)
-            WriteQuaternion(quaternion);
-    }
-
-    public byte[] ToArray() => stream.ToArray();
+    public byte[] ToArray() => _stream.ToArray();
 
     public void Dispose()
     {
-        writer?.Dispose();
-        stream?.Dispose();
+        _writer?.Dispose();
+        _stream?.Dispose();
         GC.SuppressFinalize(this);
     }
 }

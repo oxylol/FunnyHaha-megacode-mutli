@@ -4,21 +4,20 @@ using SR2MP.Packets.Utils;
 namespace SR2MP.Client.Handlers;
 
 [PacketHandler((byte)PacketType.PlayerUpdate)]
-public class PlayerUpdateHandler : BaseClientPacketHandler
+public sealed class PlayerUpdateHandler : BaseClientPacketHandler
 {
     public PlayerUpdateHandler(Client client, RemotePlayerManager playerManager)
         : base(client, playerManager) { }
 
-    public override void Handle(byte[] data)
+    public override void Handle(PacketReader reader)
     {
-        using var reader = new PacketReader(data);
-        var packet = reader.ReadPacket<PlayerUpdatePacket>();
+        var packet = reader.ReadNetObject<PlayerUpdatePacket>();
 
         // Don't update our own player
-        if (packet.PlayerId == Client.OwnPlayerId)
+        if (packet.PlayerId == _client.OwnPlayerId)
             return;
 
-        PlayerManager.UpdatePlayer(
+        _playerManager.UpdatePlayer(
             packet.PlayerId,
             packet.Position,
             packet.Rotation,

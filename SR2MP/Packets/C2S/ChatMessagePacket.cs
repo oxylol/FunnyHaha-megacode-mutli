@@ -2,23 +2,30 @@ using SR2MP.Packets.Utils;
 
 namespace SR2MP.Packets.C2S;
 
-public struct ChatMessagePacket : IPacket
+public sealed class ChatMessagePacket : IPacket
 {
-    public byte Type { get; set; }
-    public string PlayerId { get; set; }
-    public string Message { get; set; }
+    public PacketType Type => PacketType.ChatMessage;
 
-    public readonly void Serialise(PacketWriter writer)
+    public long PlayerId { get; private set; }
+    public string Message { get; private set; } = string.Empty;
+
+    public ChatMessagePacket() { }
+
+    public ChatMessagePacket(long playerId, string message)
     {
-        writer.WriteByte(Type);
-        writer.WriteString(PlayerId);
-        writer.WriteString(Message);
+        PlayerId = playerId;
+        Message = message;
     }
 
-    public void Deserialise(PacketReader reader)
+    public void SerialiseTo(PacketWriter writer)
     {
-        Type = reader.ReadByte();
-        PlayerId = reader.ReadString();
+        writer.WriteLong(PlayerId);
+        writer.WriteString(Message, 200, true);
+    }
+
+    public void DeserialiseFrom(PacketReader reader)
+    {
+        PlayerId = reader.ReadLong();
         Message = reader.ReadString();
     }
 }
