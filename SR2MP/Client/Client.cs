@@ -134,7 +134,7 @@ public sealed class Client
 
     public void SendChatMessage(string message)
     {
-        if (!isConnected || OwnPlayerId == -1)
+        if (!isConnected || PlayerIdGenerator.IsValidPlayerId(OwnPlayerId))
         {
             SrLogger.LogWarning("Cannot send chat message: Not connected to server!");
             return;
