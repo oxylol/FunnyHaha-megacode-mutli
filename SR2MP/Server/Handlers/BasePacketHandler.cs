@@ -16,12 +16,12 @@ public abstract class BasePacketHandler : IPacketHandler
         this.clientManager = clientManager;
     }
 
-    public abstract void Handle(byte[] data, IPEndPoint senderEndPoint);
+    public abstract void Handle(PacketReader reader, IPEndPoint senderEndPoint);
 
     private void SendToClient(IPacket packet, IPEndPoint endPoint)
     {
         using var writer = new PacketWriter();
-        packet.Serialise(writer);
+        packet.SerialiseTo(writer);
         networkManager.Send(writer.ToArray(), endPoint);
     }
 
@@ -33,8 +33,8 @@ public abstract class BasePacketHandler : IPacketHandler
     protected void BroadcastToAll(IPacket packet)
     {
         using var writer = new PacketWriter();
-        packet.Serialise(writer);
-        byte[] data = writer.ToArray();
+        packet.SerialiseTo(writer);
+        var data = writer.ToArray();
 
         foreach (var client in clientManager.GetAllClients())
         {
@@ -45,8 +45,8 @@ public abstract class BasePacketHandler : IPacketHandler
     private void BroadcastToAllExcept(IPacket packet, string excludedClientInfo)
     {
         using var writer = new PacketWriter();
-        packet.Serialise(writer);
-        byte[] data = writer.ToArray();
+        packet.SerialiseTo(writer);
+        var data = writer.ToArray();
 
         foreach (var client in clientManager.GetAllClients())
         {
@@ -59,7 +59,7 @@ public abstract class BasePacketHandler : IPacketHandler
 
     protected void BroadcastToAllExcept(IPacket packet, IPEndPoint excludeEndPoint)
     {
-        string clientInfo = $"{excludeEndPoint.Address}:{excludeEndPoint.Port}";
+        var clientInfo = $"{excludeEndPoint.Address}:{excludeEndPoint.Port}";
         BroadcastToAllExcept(packet, clientInfo);
     }
 }

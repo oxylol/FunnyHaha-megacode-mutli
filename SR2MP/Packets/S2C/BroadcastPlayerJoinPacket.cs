@@ -4,18 +4,13 @@ namespace SR2MP.Packets.S2C;
 
 public struct BroadcastPlayerJoinPacket : IPacket
 {
-    public byte Type { get; set; }
-    public string PlayerId { get; set; }
+    public readonly PacketType Type => PacketType.BroadcastPlayerJoin;
 
-    public readonly void Serialise(PacketWriter writer)
-    {
-        writer.WriteByte(Type);
-        writer.WriteString(PlayerId);
-    }
+    public long PlayerId { get; private set; }
 
-    public void Deserialise(PacketReader reader)
-    {
-        Type = reader.ReadByte();
-        PlayerId = reader.ReadString();
-    }
+    public BroadcastPlayerJoinPacket(long playerId) => PlayerId = playerId;
+
+    public readonly void SerialiseTo(PacketWriter writer) => writer.WriteLong(PlayerId);
+
+    public void DeserialiseFrom(PacketReader reader) => PlayerId = reader.ReadLong();
 }

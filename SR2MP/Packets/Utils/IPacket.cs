@@ -1,8 +1,6 @@
 namespace SR2MP.Packets.Utils;
 
-public interface IPacket
+public interface IPacket : INetObject
 {
-    public void Serialise(PacketWriter writer);
-
-    public void Deserialise(PacketReader reader);
+    PacketType Type { get; }
 }

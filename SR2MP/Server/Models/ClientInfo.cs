@@ -2,15 +2,15 @@ using System.Net;
 
 namespace SR2MP.Server.Models;
 
-public class ClientInfo
+public sealed class ClientInfo
 {
     public IPEndPoint EndPoint { get; set; }
     private DateTime LastHeartbeat { get; set; }
-    public string PlayerId { get; set; }
+    public long PlayerId { get; set; }
     // Not sure if this is necessary
     // public string isAuthenticated { get; set; }
 
-    public ClientInfo(IPEndPoint endPoint, string playerId = "")
+    public ClientInfo(IPEndPoint endPoint, long playerId = -1)
     {
         EndPoint = endPoint;
         LastHeartbeat = DateTime.UtcNow;

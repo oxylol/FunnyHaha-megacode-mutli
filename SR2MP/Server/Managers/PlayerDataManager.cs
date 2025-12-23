@@ -1,20 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using Newtonsoft.Json;
 using SR2MP.Server.Models;
 
 namespace SR2MP.Server.Managers;
 
-public class PlayerDataManager
+public sealed class PlayerDataManager
 {
-    private readonly Dictionary<string, PlayerData> playerDataCache = new();
+    private readonly Dictionary<long, PlayerData> playerDataCache = new();
     private readonly string saveDirectory;
     // this needs to be something like: ORIGINAL-SR2-SAVE-ID_player_data.json
     private readonly string saveFileName = "player_data.json";
+
     private string SavePath => Path.Combine(saveDirectory, saveFileName);
 
     public event Action<PlayerData>? OnPlayerDataLoaded;
@@ -33,7 +28,7 @@ public class PlayerDataManager
         LoadAllPlayerData();
     }
 
-    public PlayerData GetOrCreatePlayerData(string playerId, string playerName = "Undefined name")
+    public PlayerData GetOrCreatePlayerData(long playerId, string playerName = "Undefined name")
     {
         if (playerDataCache.TryGetValue(playerId, out var existingData))
         {
@@ -53,7 +48,7 @@ public class PlayerDataManager
 
     // every time the player updates something qwq
     // ex. inventory, position + rotation, health + energy
-    public void UpdatePlayerData(string playerId, Action<PlayerData> updateAction)
+    public void UpdatePlayerData(long playerId, Action<PlayerData> updateAction)
     {
         if (playerDataCache.TryGetValue(playerId, out var data))
         {
@@ -125,12 +120,12 @@ public class PlayerDataManager
         }
     }
 
-    public PlayerData? GetPlayerData(string playerId)
+    public PlayerData? GetPlayerData(long playerId)
     {
         return playerDataCache.TryGetValue(playerId, out var data) ? data : null;
     }
 
-    public bool HasPlayerData(string playerId)
+    public bool HasPlayerData(long playerId)
     {
         return playerDataCache.ContainsKey(playerId);
     }
@@ -140,7 +135,7 @@ public class PlayerDataManager
         return playerDataCache.Values.ToList();
     }
 
-    public bool DeletePlayerData(string playerId)
+    public bool DeletePlayerData(long playerId)
     {
         if (playerDataCache.Remove(playerId))
         {

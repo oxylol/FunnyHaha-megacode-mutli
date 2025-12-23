@@ -5,52 +5,89 @@ namespace SR2MP.Packets.C2S;
 
 public struct PlayerUpdatePacket : IPacket
 {
-    public byte Type { get; set; }
-    public string PlayerId { get; set; }
-    public Vector3 Position { get; set; }
-    public Quaternion Rotation { get; set; }
-    public int AirborneState {get; set;}
-    public bool Moving { get; set; }
-    public float Yaw { get; set; }
-    public float HorizontalMovement { get; set; }
-    public float ForwardMovement { get; set; }
-    public float HorizontalSpeed { get; set; }
-    public float ForwardSpeed { get; set; }
-    public bool Sprinting { get; set; }
+    public readonly PacketType Type => PacketType.PlayerUpdate;
 
-    public readonly void Serialise(PacketWriter writer)
+    public long PlayerId { get; private set; }
+
+    public Vector3 Position { get; private set; }
+    public Quaternion Rotation { get; private set; }
+
+    public int AirborneState { get; private set; }
+
+    public float Yaw { get; private set; }
+    public float HorizontalMovement { get; private set; }
+    public float ForwardMovement { get; private set; }
+    public float HorizontalSpeed { get; private set; }
+    public float ForwardSpeed { get; private set; }
+
+    public bool Moving { get; private set; }
+    public bool Sprinting { get; private set; }
+
+    public PlayerUpdatePacket(
+        long playerId,
+        Vector3 position,
+        Quaternion rotation,
+        int airborneState,
+        float yaw,
+        float horizontalMovement,
+        float forwardMovement,
+        float horizontalSpeed,
+        float forwardSpeed,
+        bool moving,
+        bool sprinting
+    )
     {
-        writer.WriteByte(Type);
-        writer.WriteString(PlayerId);
+        PlayerId = playerId;
+        Position = position;
+        Rotation = rotation;
+        AirborneState = airborneState;
+        Yaw = yaw;
+        HorizontalMovement = horizontalMovement;
+        ForwardMovement = forwardMovement;
+        HorizontalSpeed = horizontalSpeed;
+        ForwardSpeed = forwardSpeed;
+        Moving = moving;
+        Sprinting = sprinting;
+    }
+
+    public readonly void SerialiseTo(PacketWriter writer)
+    {
+        writer.WriteLong(PlayerId);
 
         writer.WriteVector3(Position);
         writer.WriteQuaternion(Rotation);
 
         writer.WriteInt(AirborneState);
-        writer.WriteBool(Moving);
+
         writer.WriteFloat(Yaw);
         writer.WriteFloat(HorizontalMovement);
         writer.WriteFloat(ForwardMovement);
         writer.WriteFloat(HorizontalSpeed);
         writer.WriteFloat(ForwardSpeed);
+
+        writer.ResetPackingBools();
+        writer.WriteBool(Moving);
         writer.WriteBool(Sprinting);
+        writer.EndPackingBools();
     }
 
-    public void Deserialise(PacketReader reader)
+    public void DeserialiseFrom(PacketReader reader)
     {
-        Type = reader.ReadByte();
-        PlayerId = reader.ReadString();
+        PlayerId = reader.ReadLong();
 
         Position = reader.ReadVector3();
         Rotation = reader.ReadQuaternion();
 
         AirborneState = reader.ReadInt();
-        Moving = reader.ReadBool();
+
         Yaw = reader.ReadFloat();
         HorizontalMovement = reader.ReadFloat();
         ForwardMovement = reader.ReadFloat();
         HorizontalSpeed = reader.ReadFloat();
         ForwardSpeed = reader.ReadFloat();
-        Sprinting = reader.ReadBool();
+
+        Moving = reader.ReadPackedBool();
+        Sprinting = reader.ReadPackedBool();
+        reader.EndPackingBools();
     }
 }

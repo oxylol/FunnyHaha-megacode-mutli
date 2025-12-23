@@ -15,4 +15,5 @@ public enum PacketType : byte
     BroadcastChatMessage = 10,    // Server -> All clients                                                              Chat message on other Clients
     Heartbeat = 16,               // Client -> Server                                                                   Check if Clients are alive
     HeartbeatAck = 17,            // Server -> Client                                                                   Automatically time the Clients out if the Server crashes
+    ClientHandshake = 18,         // Client -> Server                                                                   The client's acknowledgement of the connection to and ensure that the mod list is proper (mod list feature not implemented yet)
 }

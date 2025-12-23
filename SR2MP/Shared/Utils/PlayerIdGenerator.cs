@@ -1,47 +1,19 @@
-using System.Security.Cryptography;
-using System.Text;
-
 namespace SR2MP.Shared.Utils;
 
 public static class PlayerIdGenerator
 {
-    public static string GeneratePersistentPlayerId()
+    public static long GeneratePersistentPlayerId()
     {
-        try
+        long newId;
+
+        do
         {
-            string systemInfo = $"{Environment.MachineName}{Environment.UserName}";
-
-            using SHA256 sha256 = SHA256.Create();
-            byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(systemInfo));
-
-            string hash = BitConverter.ToString(hashBytes)
-                .Replace("-", "")
-                .Substring(0, 9)
-                .ToUpper();
-
-            string playerId = $"PLAYER_{hash}";
-
-            SrLogger.LogMessage($"Generated persistent player ID: {playerId}", SrLogger.LogTarget.Both);
-            return playerId;
+            newId = Random.Shared.NextInt64(1, long.MaxValue); // -1 = Invalid, 0 = Host, MaxValue = Also Invalid
         }
-        catch (Exception ex)
-        {
-            SrLogger.LogError($"Failed to generate persistent player ID: {ex}", SrLogger.LogTarget.Both);
-            return null!;
-        }
+        while (playerObjects.ContainsKey(newId));
+
+        return newId;
     }
 
-    public static bool IsValidPlayerId(string playerId)
-    {
-        if (string.IsNullOrWhiteSpace(playerId))
-            return false;
-
-        if (!playerId.StartsWith("PLAYER_"))
-            return false;
-
-        if (playerId.Length != 16)
-            return false;
-
-        return true;
-    }
+    public static bool IsValidPlayerId(long playerId) => playerId is not (-1 or long.MaxValue);
 }

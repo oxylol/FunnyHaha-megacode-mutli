@@ -11,7 +11,7 @@ public static class OnPlayerLoadPatch
     {
         var player = __instance.gameObject.AddComponent<NetworkPlayer>();
         // Temporary "HOST" because no fix
-        player.ID = Main.Client.IsConnected ? Main.Client.OwnPlayerId : "HOST";
+        player.ID = Main.Client.IsConnected ? Main.Client.OwnPlayerId : 0; // 0 = Host
         player.IsLocal = true;
     }
 }

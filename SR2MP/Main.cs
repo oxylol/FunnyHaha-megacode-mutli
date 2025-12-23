@@ -12,14 +12,14 @@ public sealed class Main : SR2EExpansionV3
     public static Client.Client Client { get; private set; }
     public static Server.Server Server { get; private set; }
 
-    public static string username => prefs.GetEntry<string>("username").Value;
+    public static string Username => _prefs.GetEntry<string>("username").Value;
 
-    private static MelonPreferences_Category prefs;
+    private static MelonPreferences_Category _prefs;
 
     public override void OnLateInitializeMelon()
     {
-        prefs = MelonPreferences.CreateCategory("SR2MP");
-        prefs.CreateEntry("username", "Player");
+        _prefs = MelonPreferences.CreateCategory("SR2MP");
+        _prefs.CreateEntry("username", "Player");
 
         Client = new Client.Client();
         Server = new Server.Server();
@@ -30,30 +30,31 @@ public sealed class Main : SR2EExpansionV3
         switch (sceneName)
         {
             case "SystemCore":
+            {
                 MainThreadDispatcher.Initialize();
                 break;
-
+            }
             case "MainMenuEnvironment":
-
+            {
                 playerPrefab = new GameObject("PLAYER");
                 playerPrefab.SetActive(false);
                 playerPrefab.transform.localScale = Vector3.one * 0.85f;
-                var networkComponent = playerPrefab.AddComponent<NetworkPlayer>();
 
                 var playerModel = Object.Instantiate(GameObject.Find("BeatrixMainMenu")).transform;
-                playerModel.parent = playerPrefab.transform;
+                playerModel.parent.SetParent(playerPrefab.transform);
                 playerModel.localPosition = Vector3.zero;
                 playerModel.localRotation = Quaternion.identity;
                 playerModel.localScale = Vector3.one;
 
-                var name = new GameObject("Username")
-                {
-                    transform = { parent = playerPrefab.transform, localPosition = Vector3.up * 3 }
-                };
-                networkComponent.usernamePanel = name.AddComponent<TextMeshPro>();
+                var name = new GameObject("Username");
+                name.transform.SetParent(playerPrefab.transform);
+                name.transform.localPosition = Vector3.up * 3;
+
+                playerPrefab.AddComponent<NetworkPlayer>().usernamePanel = name.AddComponent<TextMeshPro>();
 
                 Object.DontDestroyOnLoad(playerPrefab);
                 break;
+            }
         }
     }
 }

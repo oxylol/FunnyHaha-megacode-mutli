@@ -1,6 +1,6 @@
 namespace SR2MP.Packets.S2C;
 
-public class BroadcastPlayerUpdatePacket
+public sealed class BroadcastPlayerUpdatePacket
 {
     // for later
 }

@@ -2,23 +2,30 @@ using SR2MP.Packets.Utils;
 
 namespace SR2MP.Packets.S2C;
 
-public struct ConnectAckPacket : IPacket
+public sealed class ConnectAckPacket : IPacket
 {
-    public byte Type { get; set; }
-    public string PlayerId { get; set; }
-    public string[] OtherPlayers { get; set; }
-    
-    public readonly void Serialise(PacketWriter writer)
+    public PacketType Type => PacketType.ConnectAck;
+
+    public long PlayerId { get; private set; }
+    public long[] OtherPlayers { get; private set; }
+
+    public ConnectAckPacket() { }
+
+    public ConnectAckPacket(long playerId, long[] otherPlayers)
     {
-        writer.WriteByte(Type);
-        writer.WriteString(PlayerId);
-        writer.WriteArray(OtherPlayers, (writer, val) => { writer.WriteString(val); });
+        PlayerId = playerId;
+        OtherPlayers = otherPlayers;
     }
 
-    public void Deserialise(PacketReader reader)
+    public void SerialiseTo(PacketWriter writer)
     {
-        Type = reader.ReadByte();
-        PlayerId = reader.ReadString();
-        OtherPlayers = reader.ReadArray((reader) => reader.ReadString());
+        writer.WriteLong(PlayerId);
+        writer.WriteArray(OtherPlayers, (writer, val) => writer.WriteLong(val));
+    }
+
+    public void DeserialiseFrom(PacketReader reader)
+    {
+        PlayerId = reader.ReadLong();
+        OtherPlayers = reader.ReadArray(reader => reader.ReadLong());
     }
 }

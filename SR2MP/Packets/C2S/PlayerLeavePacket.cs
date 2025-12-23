@@ -5,18 +5,13 @@ namespace SR2MP.Packets.C2S;
 // We should make the PlayerId come from the endpoint of the sender, if possible
 public struct PlayerLeavePacket : IPacket
 {
-    public byte Type { get; set; }
-    public string PlayerId { get; set; }
+    public readonly PacketType Type => PacketType.PlayerLeave;
 
-    public readonly void Serialise(PacketWriter writer)
-    {
-        writer.WriteByte(Type);
-        writer.WriteString(PlayerId);
-    }
+    public long PlayerId { get; private set; }
 
-    public void Deserialise(PacketReader reader)
-    {
-        Type = reader.ReadByte();
-        PlayerId = reader.ReadString();
-    }
+    public PlayerLeavePacket(long playerId) => PlayerId = playerId;
+
+    public readonly void SerialiseTo(PacketWriter writer) => writer.WriteLong(PlayerId);
+
+    public void DeserialiseFrom(PacketReader reader) => PlayerId = reader.ReadLong();
 }

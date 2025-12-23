@@ -1,10 +1,9 @@
-using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 
 namespace SR2MP.Server.Managers;
 
-public class NetworkManager
+public sealed class NetworkManager
 {
     private UdpClient? udpClient;
     private volatile bool isRunning;
@@ -65,13 +64,13 @@ public class NetworkManager
 
         SrLogger.LogMessage("Server ReceiveLoop started!", SrLogger.LogTarget.Both);
 
-        IPEndPoint remoteEP = new IPEndPoint(IPAddress.IPv6Any, 0);
+        var remoteEP = new IPEndPoint(IPAddress.IPv6Any, 0);
 
         while (isRunning)
         {
             try
             {
-                byte[] data = udpClient.Receive(ref remoteEP);
+                var data = udpClient.Receive(ref remoteEP);
 
                 if (data.Length > 0)
                 {

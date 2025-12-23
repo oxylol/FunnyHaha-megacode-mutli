@@ -5,9 +5,10 @@ using SR2MP.Shared.Utils;
 
 namespace SR2MP.Server.Managers;
 
-public class PacketManager
+public sealed class PacketManager
 {
     private readonly Dictionary<byte, IPacketHandler> handlers = new();
+
     private readonly NetworkManager networkManager;
     private readonly ClientManager clientManager;
 
@@ -22,19 +23,19 @@ public class PacketManager
         var assembly = Assembly.GetExecutingAssembly();
         var handlerTypes = assembly.GetTypes()
             .Where(type => type.GetCustomAttribute<PacketHandlerAttribute>() != null
-                           && typeof(IPacketHandler).IsAssignableFrom(type)
-                           && !type.IsAbstract);
+                            && typeof(IPacketHandler).IsAssignableFrom(type)
+                            && !type.IsAbstract);
 
         foreach (var type in handlerTypes)
         {
             var attribute = type.GetCustomAttribute<PacketHandlerAttribute>();
-            if (attribute == null) continue;
+
+            if (attribute == null)
+                continue;
 
             try
             {
-                var handler = Activator.CreateInstance(type, networkManager, clientManager) as IPacketHandler;
-
-                if (handler != null)
+                if (Activator.CreateInstance(type, networkManager, clientManager) is IPacketHandler handler)
                 {
                     handlers[attribute.PacketType] = handler;
                     SrLogger.LogMessage($"Registered handler: {type.Name} for packet type {attribute.PacketType}", SrLogger.LogTarget.Both);
@@ -57,13 +58,14 @@ public class PacketManager
             return;
         }
 
-        byte packetType = data[0];
+        using var reader = new PacketReader(data);
+        var packetType = reader.ReadByte();
 
         if (handlers.TryGetValue(packetType, out var handler))
         {
             try
             {
-                MainThreadDispatcher.Enqueue(() => handler.Handle(data, clientEP));
+                MainThreadDispatcher.Enqueue(() => handler.Handle(reader, clientEP));
             }
             catch (Exception ex)
             {

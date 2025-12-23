@@ -4,15 +4,9 @@ namespace SR2MP.Packets.C2S;
 
 public struct HeartbeatPacket : IPacket
 {
-    public byte Type { get; set; }
+    public readonly PacketType Type => PacketType.Heartbeat;
 
-    public readonly void Serialise(PacketWriter writer)
-    {
-        writer.WriteByte(Type);
-    }
+    public readonly void SerialiseTo(PacketWriter writer) { }
 
-    public void Deserialise(PacketReader reader)
-    {
-        Type = reader.ReadByte();
-    }
+    public readonly void DeserialiseFrom(PacketReader reader) { }
 }

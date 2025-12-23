@@ -3,7 +3,6 @@ using System.Net.Sockets;
 using SR2MP.Client.Managers;
 using SR2MP.Client.Models;
 using SR2MP.Packets.C2S;
-using SR2MP.Packets.S2C;
 using SR2MP.Packets.Utils;
 using SR2MP.Shared.Utils;
 
@@ -19,15 +18,16 @@ public sealed class Client
 
     private readonly ClientPacketManager packetManager;
 
-    public string OwnPlayerId { get; private set; } = string.Empty;
+    public long OwnPlayerId { get; private set; } = -1;
+
     public bool IsConnected => isConnected;
 
-    public event Action<string>? OnConnected;
+    public event Action<long>? OnConnected;
     public event Action? OnDisconnected;
-    public event Action<string>? OnPlayerJoined;
-    public event Action<string>? OnPlayerLeft;
-    public event Action<string, RemotePlayer>? OnPlayerUpdate;
-    public event Action<string, string, DateTime>? OnChatMessageReceived;
+    public event Action<long>? OnPlayerJoined;
+    public event Action<long>? OnPlayerLeft;
+    public event Action<long, RemotePlayer>? OnPlayerUpdate;
+    public event Action<long, string, DateTime>? OnChatMessageReceived;
 
     public Client()
     {
@@ -49,7 +49,7 @@ public sealed class Client
 
         try
         {
-            IPAddress parsedIp = IPAddress.Parse(serverIp);
+            var parsedIp = IPAddress.Parse(serverIp);
 
             if (parsedIp.AddressFamily == AddressFamily.InterNetworkV6)
             {
@@ -76,15 +76,11 @@ public sealed class Client
 
             isConnected = true;
 
-            receiveThread = new  Il2CppSystem.Threading.Thread(new Action(ReceiveLoop));
+            receiveThread = new Il2CppSystem.Threading.Thread(new Action(ReceiveLoop));
             receiveThread.IsBackground = true;
             receiveThread.Start();
 
-            var connectPacket = new ConnectPacket
-            {
-                Type = (byte)PacketType.Connect,
-                PlayerId = OwnPlayerId
-            };
+            var connectPacket = new ConnectPacket(OwnPlayerId);
 
             SendPacket(connectPacket);
 
@@ -106,15 +102,16 @@ public sealed class Client
             SrLogger.LogError("UDP client is null in ReceiveLoop!", SrLogger.LogTarget.Both);
             return;
         }
+
         SrLogger.LogMessage("Client ReceiveLoop started!", SrLogger.LogTarget.Both);
 
-        IPEndPoint remoteEP = new IPEndPoint(IPAddress.IPv6Any, 0);
+        var remoteEP = new IPEndPoint(IPAddress.IPv6Any, 0);
 
         while (isConnected)
         {
             try
             {
-                byte[] data = udpClient.Receive(ref remoteEP);
+                var data = udpClient.Receive(ref remoteEP);
 
                 if (data.Length > 0)
                 {
@@ -137,7 +134,7 @@ public sealed class Client
 
     public void SendChatMessage(string message)
     {
-        if (!isConnected || string.IsNullOrEmpty(OwnPlayerId))
+        if (!isConnected || OwnPlayerId == -1)
         {
             SrLogger.LogWarning("Cannot send chat message: Not connected to server!");
             return;
@@ -149,19 +146,14 @@ public sealed class Client
             return;
         }
 
-        var chatPacket = new ChatMessagePacket
-        {
-            Type = (byte)PacketType.ChatMessage,
-            PlayerId = OwnPlayerId,
-            Message = message
-        };
+        var chatPacket = new ChatMessagePacket(OwnPlayerId, message);
 
         SendPacket(chatPacket);
     }
 
     internal void StartHeartbeat()
     {
-        // Removed this temporarily because there are no Handlers and the Client will get timeouted
+        // Removed this temporarily because there are no Handlers and the Client will get timed out
         // heartbeatTimer = new Timer(SendHeartbeat, null, TimeSpan.FromSeconds(215), TimeSpan.FromSeconds(215));
     }
 
@@ -170,15 +162,12 @@ public sealed class Client
         if (!isConnected)
             return;
 
-        var heartbeatPacket = new HeartbeatPacket
-        {
-            Type = (byte)PacketType.Heartbeat
-        };
+        var heartbeatPacket = new HeartbeatPacket();
 
         SendPacket(heartbeatPacket);
     }
 
-    internal void SendPacket(IPacket packet)
+    internal void SendPacket<T>(T packet) where T : IPacket
     {
         if (udpClient == null || serverEndPoint == null || !isConnected)
         {
@@ -189,8 +178,8 @@ public sealed class Client
         try
         {
             using var writer = new PacketWriter();
-            packet.Serialise(writer);
-            byte[] data = writer.ToArray();
+            packet.SerialiseTo(writer);
+            var data = writer.ToArray();
 
             SrLogger.LogMessage($"Sending {data.Length} bytes to Server...", SrLogger.LogTarget.Both);
             udpClient.Send(data, data.Length);
@@ -209,11 +198,7 @@ public sealed class Client
 
         try
         {
-            var leavePacket = new PlayerLeavePacket
-            {
-                Type = (byte)PacketType.PlayerLeave,
-                PlayerId = OwnPlayerId
-            };
+            var leavePacket = new PlayerLeavePacket(OwnPlayerId);
 
             SendPacket(leavePacket);
 
@@ -244,12 +229,12 @@ public sealed class Client
         OnConnected?.Invoke(OwnPlayerId);
     }
 
-    internal void NotifyChatMessageReceived(string playerId, string message, DateTime timestamp)
+    internal void NotifyChatMessageReceived(long playerId, string message, DateTime timestamp)
     {
         OnChatMessageReceived?.Invoke(playerId, message, timestamp);
     }
 
-    public RemotePlayer? GetRemotePlayer(string playerId)
+    public RemotePlayer? GetRemotePlayer(long playerId)
     {
         return playerManager.GetPlayer(playerId);
     }

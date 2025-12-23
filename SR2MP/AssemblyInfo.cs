@@ -2,10 +2,11 @@
 using MelonLoader;
 using SR2E.Expansion;
 
-// PLEASE COPY THIS FILE INTO YOUR PROJECT AS IS!
+// PLEASE COPY THIS FILE INTO YOUR PROJECT AS IS! - Finn
 // I WILL NOT - Az
 
-// Leave this as is
+// Leave this as is - Finn
+// I have not - Az
 [assembly: AssemblyTitle(BuildInfo.Name)]
 [assembly: AssemblyDescription(BuildInfo.Description)]
 [assembly: AssemblyCompany(BuildInfo.Company)]
@@ -35,8 +36,11 @@ using SR2E.Expansion;
 
 #pragma warning disable RCS1110 // Declare type inside namespace
 
-//Set your main class inside the typeof argument, it has to be an SR2EExpansion
-internal static class GetEntrypointType { public static Type type => typeof(Main); }
+// Set your main class inside the typeof argument, it has to be an SR2EExpansion
+internal static class GetEntrypointType
+{
+    public static Type type => typeof(Main);
+}
 
 // BuildInfo
 internal static class BuildInfo

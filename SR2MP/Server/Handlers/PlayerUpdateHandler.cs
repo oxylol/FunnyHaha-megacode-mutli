@@ -1,5 +1,4 @@
 using System.Net;
-using SR2MP.Client.Managers;
 using SR2MP.Packets.C2S;
 using SR2MP.Packets.Utils;
 using SR2MP.Server.Managers;
@@ -7,18 +6,17 @@ using SR2MP.Server.Managers;
 namespace SR2MP.Server.Handlers;
 
 [PacketHandler((byte)PacketType.PlayerUpdate)]
-public class PlayerUpdateHandler : BasePacketHandler
+public sealed class PlayerUpdateHandler : BasePacketHandler
 {
     public PlayerUpdateHandler(NetworkManager networkManager, ClientManager clientManager)
         : base(networkManager, clientManager) { }
 
-    public override void Handle(byte[] data, IPEndPoint senderEndPoint)
+    public override void Handle(PacketReader reader, IPEndPoint senderEndPoint)
     {
-        using var reader = new PacketReader(data);
-        var packet = reader.ReadPacket<PlayerUpdatePacket>();
+        var packet = reader.ReadNetObject<PlayerUpdatePacket>();
 
         // This is temporary :3
-        if (packet.PlayerId == "HOST")
+        if (packet.PlayerId == 0)
             return;
 
         playerManager.UpdatePlayer(
@@ -34,7 +32,7 @@ public class PlayerUpdateHandler : BasePacketHandler
             packet.ForwardSpeed,
             packet.Sprinting
         );
-        
+
         BroadcastToAllExcept(packet, senderEndPoint);
     }
 }
