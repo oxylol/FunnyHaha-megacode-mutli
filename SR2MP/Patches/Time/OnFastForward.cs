@@ -1,6 +1,5 @@
 using HarmonyLib;
 using Il2Cpp;
-using SR2MP.Packets.Utils;
 
 namespace SR2MP.Patches.Time;
 
@@ -11,25 +10,17 @@ public static class OnFastForward
     {
         if (handlingPacket)
             return;
-        
+
         if (Main.Server.IsRunning())
         {
-            var packet = new WorldTimePacket()
-            {
-                Type = (byte)PacketType.BroadcastFastForward,
-                Time = fastForwardUntil
-            };
-            
+            var packet = new WorldTimePacket(fastForwardUntil);
+
             Main.Server.SendToAll(packet);
         }
         else if (Main.Client.IsConnected)
         {
-            var packet = new WorldTimePacket()
-            {
-                Type = (byte)PacketType.FastForward,
-                Time = fastForwardUntil
-            };
-            
+            var packet = new WorldTimePacket(fastForwardUntil);
+
             Main.Client.SendPacket(packet);
         }
     }

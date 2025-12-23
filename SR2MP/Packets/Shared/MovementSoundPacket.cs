@@ -13,6 +13,14 @@ public sealed class MovementSoundPacket : IPacket
     public Vector3 Position { get; set; }
     public string CueName { get; set; }
 
+    public MovementSoundPacket() { }
+
+    public MovementSoundPacket(string cueName, Vector3 position)
+    {
+        Position = position;
+        CueName = cueName;
+    }
+
     public void SerialiseTo(PacketWriter writer)
     {
         writer.WriteVector3(Position);

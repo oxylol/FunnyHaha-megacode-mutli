@@ -6,9 +6,16 @@ public struct CurrencyPacket : IPacket
 {
     public readonly PacketType Type => PacketType.CurrencyAdjust;
 
-    public int Adjust { get; set; }
-    public byte CurrencyType { get; set; }
-    public bool ShowUINotification { get; set; }
+    public int Adjust { get; private set; }
+    public byte CurrencyType { get; private set; }
+    public bool ShowUINotification { get; private set; }
+
+    public CurrencyPacket(int adjust, byte currencyType, bool showUINotification)
+    {
+        Adjust = adjust;
+        CurrencyType = currencyType;
+        ShowUINotification = showUINotification;
+    }
 
     public readonly void SerialiseTo(PacketWriter writer)
     {

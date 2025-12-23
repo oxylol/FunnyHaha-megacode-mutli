@@ -18,13 +18,8 @@ public static class SyncMovementSFX
         // Do not change "Player", same reason as above
         if (cue.name.Contains("Player") && IsMovementSound(cue.name))
         {
-            var packet = new MovementSoundPacket()
-            {
-                Type = (byte)PacketType.MovementSound,
-                CueName = cue.name,
-                Position = __instance.Position,
-            };
-        
+            var packet = new MovementSoundPacket(cue.name, __instance.Position);
+
             if (Main.Server.IsRunning())
             {
                 Main.Server.SendToAll(packet);
