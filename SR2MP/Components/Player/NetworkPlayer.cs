@@ -16,7 +16,7 @@ namespace SR2MP.Components.Player;
 
 // todo: Fix the detachment issue qwq 3:
 [RegisterTypeInIl2Cpp(false)]
-public partial class NetworkPlayer : MonoBehaviour
+public sealed partial class NetworkPlayer : MonoBehaviour
 {
     private MeshRenderer[] renderers;
     private Collider collider;
