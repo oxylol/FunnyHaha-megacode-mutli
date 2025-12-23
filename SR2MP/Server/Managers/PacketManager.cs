@@ -58,14 +58,13 @@ public sealed class PacketManager
             return;
         }
 
-        using var reader = new PacketReader(data);
-        var packetType = reader.ReadByte();
+        var packetType = data[0];
 
         if (handlers.TryGetValue(packetType, out var handler))
         {
             try
             {
-                MainThreadDispatcher.Enqueue(() => handler.Handle(reader, clientEP));
+                MainThreadDispatcher.Enqueue(() => HandlePacket(handler, data, clientEP));
             }
             catch (Exception ex)
             {
@@ -76,5 +75,12 @@ public sealed class PacketManager
         {
             SrLogger.LogWarning($"No handler found for packet type: {packetType}");
         }
+    }
+
+    private static void HandlePacket(IPacketHandler handler, byte[] data, IPEndPoint clientEP)
+    {
+        using var reader = new PacketReader(data);
+        reader.Skip(1);
+        handler.Handle(reader, clientEP);
     }
 }
