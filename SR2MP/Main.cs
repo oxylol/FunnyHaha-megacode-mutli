@@ -61,25 +61,30 @@ public sealed class Main : SR2EExpansionV3
                 playerPrefab = new GameObject("PLAYER");
                 playerPrefab.SetActive(false);
                 playerPrefab.transform.localScale = Vector3.one * 0.85f;
-
+                
                 var audio = playerPrefab.AddComponent<SECTR_PointSource>();
                 audio.instance = new SECTR_AudioCueInstance();
+                
+                var networkComponent = playerPrefab.AddComponent<NetworkPlayer>();
 
                 var playerModel = Object.Instantiate(GameObject.Find("BeatrixMainMenu")).transform;
-                playerModel.parent.SetParent(playerPrefab.transform);
+                playerModel.parent = playerPrefab.transform;
                 playerModel.localPosition = Vector3.zero;
                 playerModel.localRotation = Quaternion.identity;
                 playerModel.localScale = Vector3.one;
+                
+                var name = new GameObject("Username")
+                {
+                    transform = { parent = playerPrefab.transform, localPosition = Vector3.up * 3 }
+                };
+                
+                var textComponent = name.AddComponent<TextMeshPro>();
 
-                var name = new GameObject("Username");
-                name.transform.SetParent(playerPrefab.transform);
-                name.transform.localPosition = Vector3.up * 3;
-
-                playerPrefab.AddComponent<NetworkPlayer>().usernamePanel = name.AddComponent<TextMeshPro>();
+                networkComponent.usernamePanel = textComponent;
 
                 var footstepFX = new GameObject("Footstep") { transform = { parent = playerPrefab.transform } };
                 playerPrefab.AddComponent<NetworkPlayerFootstep>().spawnAtTransform = footstepFX.transform;
-
+                
                 Object.DontDestroyOnLoad(playerPrefab);
                 break;
             }
