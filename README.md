@@ -2,24 +2,24 @@
 
 **LEGEND:**
 - 🟩 fully synced
-- 🟨 partially synced / buggy
+- 🟨 partially synced
 - 🟧 in progress
 - 🟥 not synced
+- 🟪 buggy
 
 | Feature           | Status |
 |:-----------------:|:------:|
-| Player Movement   | 🟨🟧  |
+| Player Movement   | 🟩🟪  |
 | Player Animations | 🟩     |
 | Player Sound FX   | 🟩     |
 | Player Visual FX  | 🟨🟧  |
 | Slimes            | 🟥     |
 | Plorts            | 🟥     |
+| Plots             | 🟥     |
 | Money             | 🟩     |
 | Time              | 🟩     |
 | Decorations       | 🟥     |
-| Buildings         | 🟥     |
 | Gray Labyrinth    | 🟥     |
-| Silos             | 🟥     |
 
 ## Acknowledgements
 Special thanks to:
