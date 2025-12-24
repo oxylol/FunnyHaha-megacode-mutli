@@ -9,12 +9,12 @@
 
 | Feature           | Status |
 |:-----------------:|:------:|
-| Player Movement   | 🟩🟪  |
+| Player Movement   | 🟩    |
 | Player Animations | 🟩     |
 | Player Sound FX   | 🟩     |
 | Player Visual FX  | 🟨🟪  |
-| Slimes            | 🟥     |
-| Plorts            | 🟥     |
+| Slimes            | 🟩     |
+| Plorts            | 🟩     |
 | Plots             | 🟥     |
 | Money             | 🟩     |
 | Time              | 🟩     |
