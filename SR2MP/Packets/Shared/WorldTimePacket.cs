@@ -1,21 +1,21 @@
 using SR2MP.Packets.Utils;
 
-namespace SR2MP.Packets;
+namespace SR2MP.Packets.Shared;
 
-public struct ConnectAckPacket : IPacket
+public struct WorldTimePacket : IPacket
 {
     public byte Type { get; set; }
-    public string AssignedPlayerId { get; set; }
+    public double Time { get; set; }
 
     public readonly void Serialise(PacketWriter writer)
     {
         writer.WriteByte(Type);
-        writer.WriteString(AssignedPlayerId);
+        writer.WriteDouble(Time);
     }
 
     public void Deserialise(PacketReader reader)
     {
         Type = reader.ReadByte();
-        AssignedPlayerId = reader.ReadString();
+        Time = reader.ReadDouble();
     }
 }

@@ -1,31 +1,95 @@
-﻿using SR2E.Expansion;
+﻿using Il2Cpp;
+using Il2CppTMPro;
+using MelonLoader;
+using MelonLoader.Utils;
+using SR2E.Expansion;
+using SR2E.Utils;
+using SR2MP.Components;
+using SR2MP.Components.FX;
+using SR2MP.Components.Player;
+using SR2MP.Components.Time;
+using SR2MP.Packets.Utils;
+using SR2MP.Shared.Utils;
 
 namespace SR2MP;
 
-public sealed class Main : SR2EExpansionV2
+public sealed class Main : SR2EExpansionV3
 {
-    public static class BuildInfo
+    public static void SendToAllOrServer(IPacket packet)
     {
-        public const string Name = "Slime Rancher 2 Multiplayer Mod";
-        public const string Description = "Adds Multiplayer to Slime Rancher 2";
-        public const string Author = "Shark";
-        public const string CoAuthors = null;
-        public const string Contributors = "Gopher, Artur, AlchlcSystm";
-        public const string Company = null;
-        public const string Version = "0.1.0";
-        public const string DownloadLink = null;
-        public const string SourceCode = "https://github.com/pyeight/SlimeRancher2Multiplayer";
-        public const string Nexus = null;
-        public const string Discord = "https://discord.com/invite/a7wfBw5feU";
-        public const bool UsePrism = false;
-    }
+        if (Client.IsConnected)
+        {
+            Client.SendPacket(packet);
+        }
 
-    public override void OnSceneWasLoaded(int _, string sceneName)
-    {
-        SrLogger.Log($"test log owo :3 - {sceneName}");
+        if (Server.IsRunning())
+        {
+            Server.SendToAll(packet);
+        }
     }
+    
+    public static Client.Client Client { get; private set; }
+    public static Server.Server Server { get; private set; }
+    static MelonPreferences_Category preferences;
+    public static string Username => preferences.GetEntry<string>("username").Value;
+    public static bool PacketSizeLogging => preferences.GetEntry<bool>("packet_size_log").Value;
 
     public override void OnLateInitializeMelon()
     {
+        preferences = MelonPreferences.CreateCategory("SR2MP");
+        preferences.CreateEntry("username", "Player");
+        preferences.CreateEntry("packet_size_log", false);
+
+        Client = new Client.Client();
+        Server = new Server.Server();
+    }
+
+    public override void OnSceneWasLoaded(int buildIndex, string sceneName)
+    {
+        switch (sceneName)
+        {
+            case "SystemCore":
+                MainThreadDispatcher.Initialize();
+                
+                var forceTimeScale = new GameObject("SR2MP_TimeScale").AddComponent<ForceTimeScale>();
+                Object.DontDestroyOnLoad(forceTimeScale.gameObject);
+                break;
+
+            case "MainMenuEnvironment":
+                playerPrefab = new GameObject("PLAYER");
+                playerPrefab.SetActive(false);
+                playerPrefab.transform.localScale = Vector3.one * 0.85f;
+                
+                var audio = playerPrefab.AddComponent<SECTR_PointSource>();
+                audio.instance = new SECTR_AudioCueInstance();
+                
+                var networkComponent = playerPrefab.AddComponent<NetworkPlayer>();
+
+                var playerModel = Object.Instantiate(GameObject.Find("BeatrixMainMenu")).transform;
+                playerModel.parent = playerPrefab.transform;
+                playerModel.localPosition = Vector3.zero;
+                playerModel.localRotation = Quaternion.identity;
+                playerModel.localScale = Vector3.one;
+                
+                var name = new GameObject("Username")
+                {
+                    transform = { parent = playerPrefab.transform, localPosition = Vector3.up * 3 }
+                };
+                
+                var textComponent = name.AddComponent<TextMeshPro>();
+
+                networkComponent.usernamePanel = textComponent;
+
+                var footstepFX = new GameObject("Footstep") { transform = { parent = playerPrefab.transform } };
+                playerPrefab.AddComponent<NetworkPlayerFootstep>().spawnAtTransform = footstepFX.transform;
+                
+                Object.DontDestroyOnLoad(playerPrefab);
+                break;
+        }
+    }
+
+    public override void AfterGameContext(GameContext gameContext)
+    {
+        actorManager.Initialize(gameContext);
     }
 }

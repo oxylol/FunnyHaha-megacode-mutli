@@ -2,26 +2,55 @@
 using MelonLoader;
 using SR2E.Expansion;
 
-[assembly: AssemblyTitle(Main.BuildInfo.Name)]
-[assembly: AssemblyDescription(Main.BuildInfo.Description)]
-[assembly: AssemblyVersion(Main.BuildInfo.Version)]
-[assembly: AssemblyFileVersion(Main.BuildInfo.Version)]
-[assembly: AssemblyCompany(Main.BuildInfo.Company)]
-[assembly: AssemblyProduct(Main.BuildInfo.Name)]
-[assembly: AssemblyCopyright($"Created by {Main.BuildInfo.Author}")]
-[assembly: AssemblyTrademark(Main.BuildInfo.Company)]
+// PLEASE COPY THIS FILE INTO YOUR PROJECT AS IS!
+// I WILL NOT - Az
 
-[assembly: MelonInfo(typeof(Main), Main.BuildInfo.Name, Main.BuildInfo.Version, Main.BuildInfo.Author, Main.BuildInfo.DownloadLink)]
+// Leave this as is
+[assembly: AssemblyTitle(BuildInfo.Name)]
+[assembly: AssemblyDescription(BuildInfo.Description)]
+[assembly: AssemblyCompany(BuildInfo.Company)]
+[assembly: AssemblyProduct(BuildInfo.Name)]
+[assembly: AssemblyCopyright($"Created by {BuildInfo.Author}")]
+[assembly: AssemblyTrademark(BuildInfo.Company)]
+[assembly: AssemblyVersion(BuildInfo.Version)]
+[assembly: AssemblyFileVersion(BuildInfo.Version)]
+
+[assembly: MelonInfo(typeof(MLEntrypoint), BuildInfo.Name, BuildInfo.Version, BuildInfo.Author, BuildInfo.DownloadLink)]
 [assembly: MelonGame("MonomiPark", "SlimeRancher2")]
-[assembly: MelonColor(255, 77, 149, 203)]
+
+[assembly: AssemblyMetadata(SR2EExpansionAttributes.CoAuthors, BuildInfo.CoAuthors)]
+[assembly: AssemblyMetadata(SR2EExpansionAttributes.MinSR2EVersion, BuildInfo.MinSR2EVersion)]
+[assembly: AssemblyMetadata(SR2EExpansionAttributes.Contributors, BuildInfo.Contributors)]
+[assembly: AssemblyMetadata(SR2EExpansionAttributes.SourceCode, BuildInfo.SourceCode)]
+[assembly: AssemblyMetadata(SR2EExpansionAttributes.Nexus, BuildInfo.Nexus)]
+[assembly: AssemblyMetadata(SR2EExpansionAttributes.UsePrism, BuildInfo.UsePrism)]
+[assembly: AssemblyMetadata(SR2EExpansionAttributes.IsExpansion, "true")]
+
 [assembly: MelonAdditionalDependencies("SR2E")]
-[assembly: MelonPriority(-100)]
-[assembly: VerifyLoaderVersion(0, 6, 2, true)]
 
-[assembly: AssemblyMetadata("co_authors", Main.BuildInfo.CoAuthors)]
-[assembly: AssemblyMetadata("contributors", Main.BuildInfo.Contributors)]
-[assembly: AssemblyMetadata("source_code", Main.BuildInfo.SourceCode)]
-[assembly: AssemblyMetadata("nexus", Main.BuildInfo.Nexus)]
-[assembly: AssemblyMetadata("discord", Main.BuildInfo.Discord)]
+// Modifies the minimum ML version required (mandatory)
+[assembly: VerifyLoaderVersion(0, 7, 1, true)]
+// Sets a color of your melon (mandatory)
+[assembly: MelonColor(255, 77, 149, 203)]
 
-[assembly: SR2EExpansion(Main.BuildInfo.UsePrism)]
+#pragma warning disable RCS1110 // Declare type inside namespace
+
+//Set your main class inside the typeof argument, it has to be an SR2EExpansion
+internal static class GetEntrypointType { public static Type type => typeof(Main); }
+
+// BuildInfo
+internal static class BuildInfo
+{
+    internal const string Name = "Slime Rancher 2 Multiplayer Mod";
+    internal const string Description = "Adds Multiplayer to Slime Rancher 2";
+    internal const string Author = "Shark";
+    internal const string CoAuthors = "";
+    internal const string Contributors = "shizophrenicgopher, AlchlcSystm";
+    internal const string Company = "";
+    internal const string Version = "0.1.0";
+    internal const string DownloadLink = "https://discord.com/invite/a7wfBw5feU";
+    internal const string SourceCode = "https://github.com/pyeight/SlimeRancher2Multiplayer";
+    internal const string Nexus = "";
+    internal const string UsePrism = "false";
+    internal const string MinSR2EVersion = SR2E.BuildInfo.CodeVersion; // e.g "3.4.3", the min required SR2 version. No beta or alpha versions
+}
