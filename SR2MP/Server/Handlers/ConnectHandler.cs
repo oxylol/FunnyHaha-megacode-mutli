@@ -2,6 +2,7 @@ using System.Collections;
 using System.Net;
 using Il2Cpp;
 using Il2CppMonomiPark.SlimeRancher.DataModel;
+using Il2CppMonomiPark.SlimeRancher.Economy;
 using MelonLoader;
 using SR2MP.Server.Managers;
 using SR2MP.Packets.Utils;
@@ -27,11 +28,16 @@ public class ConnectHandler : BasePacketHandler
 
         var client = clientManager.AddClient(senderEndPoint, playerId);
 
+        var money = SceneContext.Instance.PlayerState.GetCurrency(GameContext.Instance.LookupDirector._currencyList[0].Cast<ICurrency>());
+        var rainbowMoney = SceneContext.Instance.PlayerState.GetCurrency(GameContext.Instance.LookupDirector._currencyList[1].Cast<ICurrency>());
+        
         var ackPacket = new ConnectAckPacket
         {
             Type = (byte)PacketType.ConnectAck,
             PlayerId = playerId,
-            OtherPlayers = Array.ConvertAll(playerManager.GetAllPlayers().ToArray(), input => input.PlayerId)
+            OtherPlayers = Array.ConvertAll(playerManager.GetAllPlayers().ToArray(), input => input.PlayerId),
+            Money = money,
+            RainbowMoney = rainbowMoney
         };
 
         Main.Server.SendToClient(ackPacket, client);
@@ -43,8 +49,8 @@ public class ConnectHandler : BasePacketHandler
 
         Main.Server.SendToAllExcept(joinPacket, senderEndPoint);
         
-        SendActorsPacket(senderEndPoint);
         SendPlotsPacket(senderEndPoint);
+        SendActorsPacket(senderEndPoint);
         
         SrLogger.LogMessage($"Player {playerId} successfully connected",
             $"Player {playerId} successfully connected from {senderEndPoint}");
@@ -79,17 +85,23 @@ public class ConnectHandler : BasePacketHandler
     void SendPlotsPacket(IPEndPoint client)
     {
         var plotsList = new List<LandPlotsPacket.Plot>();
-        
+    
         foreach (var plotKeyValuePair in SceneContext.Instance.GameModel.landPlots)
         {
             var plot = plotKeyValuePair.Value;
             var id = plotKeyValuePair.Key;
             
+            var upgradesList = new Il2CppSystem.Collections.Generic.List<LandPlot.Upgrade>();
+            foreach (var upgrade in plot.upgrades)
+            {
+                upgradesList.Add(upgrade);
+            }
+        
             plotsList.Add(new LandPlotsPacket.Plot()
             {
                 ID = id,
                 Type = plot.typeId,
-                UpgradesList = plot.upgrades.Cast<Il2CppSystem.Collections.Generic.List<LandPlot.Upgrade>>(),
+                UpgradesList = upgradesList,
             });
         }
 

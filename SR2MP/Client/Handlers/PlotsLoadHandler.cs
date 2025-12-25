@@ -20,8 +20,6 @@ public class PlotsLoadHandler : BaseClientPacketHandler
         foreach (var plot in packet.Plots)
         {
             var model = SceneContext.Instance.GameModel.landPlots[plot.ID];
-            model.typeId = plot.Type;
-            model.upgrades = plot.Upgrades;
 
             if (model.gameObj)
             {
@@ -34,6 +32,9 @@ public class PlotsLoadHandler : BaseClientPacketHandler
                 landPlotComponent2.ApplyUpgrades(plot.Upgrades.Cast<Il2CppSystem.Collections.Generic.IEnumerable<LandPlot.Upgrade>>(), false);
                 handlingPacket = false;
             }
+            
+            model.typeId = plot.Type;
+            model.upgrades = plot.Upgrades;
         }
     }
 }

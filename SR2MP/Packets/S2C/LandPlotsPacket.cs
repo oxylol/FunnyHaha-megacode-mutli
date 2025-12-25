@@ -39,8 +39,6 @@ namespace SR2MP.Packets.S2C
                     UpgradesList.Add(upgrade);
                     UpgradesSet.Add(upgrade);
                 }
-
-                SrLogger.LogMessage($"ID: {ID} - Upgrades: {count}");
             }
         }
 

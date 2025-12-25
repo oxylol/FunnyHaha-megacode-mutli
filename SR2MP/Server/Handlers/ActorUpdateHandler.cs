@@ -1,5 +1,6 @@
 using System.Net;
 using Il2CppMonomiPark.SlimeRancher.DataModel;
+using Il2CppMonomiPark.SlimeRancher.Slime;
 using SR2MP.Server.Managers;
 using SR2MP.Packets.Utils;
 
@@ -24,12 +25,18 @@ public class ActorUpdateHandler : BasePacketHandler
         
         actor.lastPosition = packet.Position;
         actor.lastRotation = packet.Rotation;
-        
+
+        var slime = actor.TryCast<SlimeModel>();
+        if (slime != null)
+            slime.Emotions = packet.Emotions;
         if (actor.TryGetNetworkComponent(out var networkComponent))
         {
             networkComponent.SavedVelocity = packet.Velocity;
             networkComponent.nextPosition = packet.Position;
             networkComponent.nextRotation = packet.Rotation;
+            
+            if (slime != null)
+                networkComponent.GetComponent<SlimeEmotions>().SetAll(packet.Emotions);
         }
         
         Main.Server.SendToAllExcept(packet, senderEndPoint);

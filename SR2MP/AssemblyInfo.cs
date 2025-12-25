@@ -45,13 +45,12 @@ internal static class BuildInfo
     internal const string Description = "Adds Multiplayer to Slime Rancher 2";
     internal const string Author = "Shark";
     internal const string CoAuthors = "";
-    internal const string Contributors = "Artur, AlchlcSystm";
+    internal const string Contributors = "shizophrenicgopher, AlchlcSystm";
     internal const string Company = "";
-    internal const string Version = "0.0.1";
-    internal const string DownloadLink = "";
+    internal const string Version = "0.1.0";
+    internal const string DownloadLink = "https://discord.com/invite/a7wfBw5feU";
     internal const string SourceCode = "https://github.com/pyeight/SlimeRancher2Multiplayer";
     internal const string Nexus = "";
-    internal const string Discord = "https://discord.com/invite/a7wfBw5feU";
     internal const string UsePrism = "false";
     internal const string MinSR2EVersion = SR2E.BuildInfo.CodeVersion; // e.g "3.4.3", the min required SR2 version. No beta or alpha versions
 }

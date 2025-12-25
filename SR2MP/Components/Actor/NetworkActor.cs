@@ -5,10 +5,12 @@ using Il2CppInterop.Runtime;
 using Il2CppInterop.Runtime.Injection;
 using Il2CppMonomiPark.SlimeRancher.DataModel;
 using Il2CppMonomiPark.SlimeRancher.Regions;
+using Il2CppMonomiPark.SlimeRancher.Slime;
 using Il2CppSystem.Reflection;
 using MelonLoader;
 using SR2MP.Packets.Utils;
 using SR2MP.Shared.Utils;
+using Unity.Mathematics;
 using Action = Il2CppSystem.Action;
 using Delegate = Il2CppSystem.Delegate;
 
@@ -20,6 +22,7 @@ public class NetworkActor : MonoBehaviour
     private RegionMember regionMember;
     private IdentifiableActor identifiableActor;
     private Rigidbody rigidbody;
+    private SlimeEmotions emotions;
     
     private float syncTimer = Timers.ActorTimer;
     public Vector3 SavedVelocity { get; internal set; }
@@ -39,8 +42,20 @@ public class NetworkActor : MonoBehaviour
     private float interpolationStart;
     private float interpolationEnd;
 
+    private float4 EmotionsFloat
+    {
+        get
+        {
+            var value = emotions 
+                ? emotions._model.Emotions 
+                : new float4(0, 0, 0, 0);
+            return value;
+        }
+    }
+    
     void Start()
     {
+        emotions = GetComponent<SlimeEmotions>();
         cachedLocallyOwned = LocallyOwned;
         rigidbody = GetComponent<Rigidbody>();
         identifiableActor = GetComponent<IdentifiableActor>();
@@ -117,8 +132,6 @@ public class NetworkActor : MonoBehaviour
             nextPosition = transform.position;
             nextRotation = transform.rotation;
             
-            var difference = (transform.position - previousSentPosition).magnitude;
-            
             var packet = new ActorUpdatePacket()
             {
                 Type = (byte)PacketType.ActorUpdate,
@@ -126,6 +139,7 @@ public class NetworkActor : MonoBehaviour
                 Position = transform.position,
                 Rotation = transform.rotation,
                 Velocity = rigidbody?.velocity ?? Vector3.zero,
+                Emotions = EmotionsFloat
             };
 
             Main.SendToAllOrServer(packet);

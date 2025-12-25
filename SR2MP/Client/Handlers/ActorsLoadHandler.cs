@@ -17,6 +17,8 @@ public class ActorsLoadHandler : BaseClientPacketHandler
         using var reader = new PacketReader(data);
         var packet = reader.ReadPacket<ActorsPacket>();
 
+        actorManager.Actors.Clear();
+        
         var toRemove = new Il2CppSystem.Collections.Generic.Dictionary<ActorId, IdentifiableModel>(
             SceneContext.Instance.GameModel.identifiables
                 .Cast<Il2CppSystem.Collections.Generic.IDictionary<ActorId, IdentifiableModel>>());

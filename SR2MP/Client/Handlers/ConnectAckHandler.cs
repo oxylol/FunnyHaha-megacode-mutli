@@ -1,3 +1,5 @@
+using Il2Cpp;
+using Il2CppMonomiPark.SlimeRancher.Economy;
 using SR2MP.Client.Managers;
 using SR2MP.Shared.Managers;
 using SR2MP.Components;
@@ -31,7 +33,10 @@ public class ConnectAckHandler : BaseClientPacketHandler
 
         SrLogger.LogMessage($"Connection acknowledged by server! (PlayerId: {packet.PlayerId})",
             SrLogger.LogTarget.Both);
-
+        
+        SceneContext.Instance.PlayerState._model.SetCurrency(GameContext.Instance.LookupDirector._currencyList[0].Cast<ICurrency>(), packet.Money);
+        SceneContext.Instance.PlayerState._model.SetCurrency(GameContext.Instance.LookupDirector._currencyList[1].Cast<ICurrency>(), packet.RainbowMoney);
+        
         foreach (var player in packet.OtherPlayers)
         {
             SpawnPlayer(player);
