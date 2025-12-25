@@ -10,18 +10,20 @@
 |:-----------------:|:------:|:----------------------------------------------------:|
 | Player Movement   | 🟩     | Fully functional                                     |
 | Player Animations | 🟩     | Fully functional                                     |
-| Player Sound FX   | 🟨     | Water splash sound missing                           |
+| Player Sound FX   | 🟨     | Water splash sound + Plot buy/upgrade sound missing  |
 | Player Visual FX  | 🟨     | Water splash particle + Vac suction trail missing    |
+| Player Inventory  | 🟥     | Not implemented                                      |
+| Initial Save load | 🟩     | Functional for __everything currently__ synchronised |
 | Slimes            | 🟩     | Fully functional                                     |
 | Plorts            | 🟩     | Fully functional                                     |
 | Landplots         | 🟨     | Gardens and Silos missing functionality              |
 | Landplot upgrades | 🟩     | Fully functional                                     |
-| Gadgets           | 🟥     | Not synchronised                                     |
-| Upgrades          | 🟥     | Not synchronised                                     |
+| Gadgets           | 🟥     | Not implemented                                      |
+| Upgrades          | 🟥     | Not implemented                                      |
 | Money             | 🟩     | Fully functional                                     |
 | Time              | 🟩     | Fully functional                                     |
-| Decorations       | 🟥     | Not synchronised                                     |
-| Gray Labyrinth    | 🟥     | Not synchronised                                     |
+| Decorations       | 🟥     | Not implemented                                      |
+| Gray Labyrinth    | 🟥     | Not implemented                                      |
 
 ## Acknowledgements
 Special thanks to:
