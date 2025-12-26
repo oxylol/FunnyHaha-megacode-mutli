@@ -43,19 +43,21 @@ public sealed class PacketReader : IDisposable
 
     public List<T> ReadList<T>(Func<PacketReader, T> reader)
     {
-        var list = new List<T>(this.reader.ReadInt32());
+        var count = this.reader.ReadInt32();
+        var list = new List<T>(count);
 
-        for (var i = 0; i < list.Count; i++)
-            list[i] = reader(this);
+        for (var i = 0; i < count; i++)
+            list.Add(reader(this));
 
         return list;
     }
 
     public Dictionary<TKey, TValue> ReadDictionary<TKey, TValue>(Func<PacketReader, TKey> keyReader, Func<PacketReader, TValue> valueReader) where TKey : notnull
     {
-        var dict = new Dictionary<TKey, TValue>(reader.ReadInt32());
+        var count = reader.ReadInt32();
+        var dict = new Dictionary<TKey, TValue>(count);
 
-        for (var i = 0; i < dict.Count; i++)
+        for (var i = 0; i < count; i++)
             dict[keyReader(this)] = valueReader(this);
 
         return dict;

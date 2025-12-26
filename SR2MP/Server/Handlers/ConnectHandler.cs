@@ -35,7 +35,7 @@ public class ConnectHandler : BasePacketHandler
         {
             Type = (byte)PacketType.ConnectAck,
             PlayerId = playerId,
-            OtherPlayers = Array.ConvertAll(playerManager.GetAllPlayers().ToArray(), input => input.PlayerId),
+            OtherPlayers = playerManager.GetAllPlayers().Select(p => p.PlayerId).ToArray(),
             Money = money,
             RainbowMoney = rainbowMoney
         };

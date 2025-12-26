@@ -114,9 +114,9 @@ public class RemotePlayerManager
         }
     }
 
-    public List<RemotePlayer> GetAllPlayers()
+    public IEnumerable<RemotePlayer> GetAllPlayers()
     {
-        return players.Values.ToList();
+        return players.Values;
     }
 
     public void Clear()

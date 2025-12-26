@@ -76,21 +76,19 @@ public class ClientManager
         }
     }
 
-    public List<ClientInfo> GetAllClients()
+    public IEnumerable<ClientInfo> GetAllClients()
     {
-        return clients.Values.ToList();
+        return clients.Values;
     }
 
-    public List<ClientInfo> GetTimedOutClients()
+    public IEnumerable<ClientInfo> GetTimedOutClients()
     {
-        return clients.Values
-            .Where(client => client.IsTimedOut())
-            .ToList();
+        return clients.Values.Where(client => client.IsTimedOut());
     }
 
     public void RemoveTimedOutClients()
     {
-        var timedOut = GetTimedOutClients();
+        var timedOut = GetTimedOutClients().ToArray();
         foreach (var client in timedOut)
         {
             RemoveClient(client.GetClientInfo());
