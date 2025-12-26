@@ -4,7 +4,7 @@ using SR2MP.Packets.Utils;
 
 namespace SR2MP.Client.Handlers;
 
-[ClientPacketHandler((byte)PacketType.HeartbeatAck)]
+[PacketHandler((byte)PacketType.HeartbeatAck)]
 public class HeartbeatAckHandler : BaseClientPacketHandler
 {
     public HeartbeatAckHandler(Client client, RemotePlayerManager playerManager)
