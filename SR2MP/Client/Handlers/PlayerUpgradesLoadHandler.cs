@@ -5,12 +5,11 @@ using SR2MP.Shared.Managers;
 
 namespace SR2MP.Client.Handlers;
 
+[PacketHandler(((byte)PacketType.InitialPlayerUpgrades))]
 public class PlayerUpgradesLoadHandler : BaseClientPacketHandler
 {
     public PlayerUpgradesLoadHandler(Client client, RemotePlayerManager playerManager)
-        : base(client, playerManager)
-    {
-    }
+        : base(client, playerManager) { }
 
     public override void Handle(byte[] data)
     {
@@ -18,11 +17,13 @@ public class PlayerUpgradesLoadHandler : BaseClientPacketHandler
         var packet = reader.ReadPacket<UpgradesPacket>();
 
         var upgradeInd = 0;
-        var upgradesCLient = Resources.FindObjectsOfTypeAll<UpgradeDefinition>();
+        var upgradesClient = GameContext.Instance.LookupDirector._upgradeDefinitions;
         foreach (var upgradeLvl in packet.Upgrades)
         {
-            SceneContext.Instance.PlayerState._model.upgradeModel.SetUpgradeLevel(upgradesCLient[upgradeInd],
-                upgradeLvl);
+            var upgrade = upgradesClient.items._items.FirstOrDefault(x => x._uniqueId == upgradeLvl.Key);
+
+            SceneContext.Instance.PlayerState._model.upgradeModel.SetUpgradeLevel(upgrade, upgradeLvl.Value);
+            
             upgradeInd++;
         }
     }

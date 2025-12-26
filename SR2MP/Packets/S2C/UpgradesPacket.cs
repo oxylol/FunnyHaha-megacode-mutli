@@ -7,7 +7,7 @@ public class UpgradesPacket : IPacket
     public byte Type { get; set; }
     
     // I really dislike the idea but i'd rather send a List of integers to the Client than a (shorter) list of strings of string ~ Artur
-    public List<int> Upgrades { get; set; }
+    public Dictionary<byte, sbyte> Upgrades { get; set; }
     
     public void Serialise(PacketWriter writer)
     {
@@ -15,7 +15,8 @@ public class UpgradesPacket : IPacket
         writer.WriteInt(Upgrades.Count);
         foreach (var upgrade in Upgrades)
         {
-            writer.WriteInt(upgrade);
+            writer.WriteByte(upgrade.Key);
+            writer.WriteSByte(upgrade.Value);
         }
     }
 
@@ -24,10 +25,10 @@ public class UpgradesPacket : IPacket
         Type = reader.ReadByte();
         
         var upgradeCount = reader.ReadInt();
-        Upgrades = new List<int>(upgradeCount);
+        Upgrades = new Dictionary<byte, sbyte>(upgradeCount);
         for (var i = 0; i < upgradeCount; i++)
         {
-            Upgrades.Add(reader.ReadInt());
+            Upgrades.Add(reader.ReadByte(),reader.ReadSByte());
         }
     }
 }

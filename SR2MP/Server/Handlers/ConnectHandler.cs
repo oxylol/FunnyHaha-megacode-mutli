@@ -64,12 +64,14 @@ public class ConnectHandler : BasePacketHandler
 
     void SendUpgradesPacket(IPEndPoint client)
     {
-        var upgrades = new List<int>();
+        var upgrades = new Dictionary<byte, sbyte>();
 
-        foreach (var upgrade in Resources.FindObjectsOfTypeAll<UpgradeDefinition>())
+        foreach (var upgrade in GameContext.Instance.LookupDirector._upgradeDefinitions.items)
         {
-            upgrades.Add(SceneContext.Instance.PlayerState._model.upgradeModel.GetUpgradeLevel(upgrade));
+            upgrades.Add((byte)upgrade._uniqueId, (sbyte)SceneContext.Instance.PlayerState._model.upgradeModel.GetUpgradeLevel(upgrade));
         }
+
+
 
         var upgradesPacket = new UpgradesPacket()
         {
