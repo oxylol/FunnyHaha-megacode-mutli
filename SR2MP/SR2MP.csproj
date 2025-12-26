@@ -20,7 +20,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Reference Include="libraries/*.dll" />
+      <!-- Reference all DLLs in the libraries folder -->
+      <Reference Include="libraries\*.dll">
+        <Private>False</Private>
+      </Reference>
 
       <!-- Roslynator analyzers commented out - they're optional code quality tools -->
       <!-- Uncomment these if you want code style warnings (requires NuGet access): -->
