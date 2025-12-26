@@ -42,7 +42,7 @@ echo Copying DLLs to: %CD%\%LIBS_PATH%
 echo.
 
 REM Copy MelonLoader DLLs
-echo [1/3] Checking MelonLoader folder...
+echo [1/4] Checking MelonLoader folder...
 if exist "%SR2_PATH%\MelonLoader\" (
     echo   Found MelonLoader folder, copying DLLs...
     copy /Y "%SR2_PATH%\MelonLoader\*.dll" "%LIBS_PATH%\" >nul 2>&1
@@ -59,25 +59,28 @@ if exist "%SR2_PATH%\MelonLoader\" (
     exit /b 1
 )
 
-REM Copy Managed DLLs (Unity + Game)
-echo [2/3] Checking Managed folder...
-if exist "%SR2_PATH%\SlimeRancher2_Data\Managed\" (
-    echo   Found Managed folder, copying DLLs...
-    copy /Y "%SR2_PATH%\SlimeRancher2_Data\Managed\*.dll" "%LIBS_PATH%\" >nul 2>&1
-    if %ERRORLEVEL% EQU 0 (
-        echo   [OK] Managed DLLs copied
-    ) else (
-        echo   [WARN] Failed to copy some Managed DLLs
-    )
+REM Copy Il2Cpp Assemblies (Game assemblies converted from Il2Cpp)
+echo [2/4] Checking Il2CppAssemblies folder...
+if exist "%SR2_PATH%\MelonLoader\Il2CppAssemblies\" (
+    echo   Found Il2CppAssemblies folder, copying DLLs...
+    copy /Y "%SR2_PATH%\MelonLoader\Il2CppAssemblies\*.dll" "%LIBS_PATH%\" >nul 2>&1
+    echo   [OK] Il2Cpp assemblies copied
 ) else (
-    echo   [ERROR] Managed folder not found!
-    echo   Path checked: %SR2_PATH%\SlimeRancher2_Data\Managed\
-    pause
-    exit /b 1
+    echo   [WARN] Il2CppAssemblies not found - may need to run SR2 once with MelonLoader
+)
+
+REM Copy Managed Framework DLLs
+echo [3/4] Checking MelonLoader Managed folder...
+if exist "%SR2_PATH%\MelonLoader\Managed\" (
+    echo   Found Managed folder, copying DLLs...
+    copy /Y "%SR2_PATH%\MelonLoader\Managed\*.dll" "%LIBS_PATH%\" >nul 2>&1
+    echo   [OK] Managed framework DLLs copied
+) else (
+    echo   [WARN] Managed folder not found
 )
 
 REM Copy SR2E dependency
-echo [3/3] Checking for SR2E mod...
+echo [4/4] Checking for SR2E mod...
 set "SR2E_PATH=%SR2_PATH%\Mods\SR2E.dll"
 if exist "%SR2E_PATH%" (
     copy /Y "%SR2E_PATH%" "%LIBS_PATH%\" >nul 2>&1
