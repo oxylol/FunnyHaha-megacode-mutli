@@ -1,12 +1,24 @@
 @echo off
 REM Setup script for SR2MP - Copies required DLLs from Slime Rancher 2
 
+REM Navigate to script directory
+cd /d "%~dp0"
+
 echo Setting up SR2MP libraries...
 echo.
 
 REM Default Steam path for Slime Rancher 2
 set "SR2_PATH=C:\Program Files (x86)\Steam\steamapps\common\Slime Rancher 2"
 set "LIBS_PATH=SR2MP\libraries"
+
+REM Verify SR2MP folder exists
+if not exist "SR2MP" (
+    echo ERROR: SR2MP folder not found!
+    echo Make sure you're running this script from the project root directory.
+    echo.
+    pause
+    exit /b 1
+)
 
 REM Check if Slime Rancher 2 is installed
 if not exist "%SR2_PATH%" (
@@ -26,7 +38,7 @@ if not exist "%LIBS_PATH%" (
     echo Created libraries folder
 )
 
-echo Copying DLLs...
+echo Copying DLLs to: %CD%\%LIBS_PATH%
 echo.
 
 REM Copy MelonLoader DLLs

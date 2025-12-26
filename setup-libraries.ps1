@@ -1,11 +1,23 @@
 # Setup script for SR2MP - Copies required DLLs from Slime Rancher 2
 
+# Navigate to script directory
+Set-Location $PSScriptRoot
+
 Write-Host "Setting up SR2MP libraries..." -ForegroundColor Cyan
 Write-Host ""
 
 # Default Steam path for Slime Rancher 2
 $SR2_PATH = "C:\Program Files (x86)\Steam\steamapps\common\Slime Rancher 2"
 $LIBS_PATH = "SR2MP\libraries"
+
+# Verify SR2MP folder exists
+if (-not (Test-Path "SR2MP")) {
+    Write-Host "ERROR: SR2MP folder not found!" -ForegroundColor Red
+    Write-Host "Make sure you're running this script from the project root directory."
+    Write-Host ""
+    Read-Host "Press Enter to exit"
+    exit 1
+}
 
 # Check if Slime Rancher 2 is installed
 if (-not (Test-Path $SR2_PATH)) {
@@ -25,7 +37,7 @@ if (-not (Test-Path $LIBS_PATH)) {
     Write-Host "Created libraries folder"
 }
 
-Write-Host "Copying DLLs..." -ForegroundColor Cyan
+Write-Host "Copying DLLs to: $PWD\$LIBS_PATH" -ForegroundColor Cyan
 Write-Host ""
 
 # Copy MelonLoader DLLs
