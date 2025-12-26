@@ -22,9 +22,11 @@
     <ItemGroup>
       <Reference Include="libraries/*.dll" />
 
-      <PackageReference Include="Roslynator.Analyzers" Version="4.12.11" PrivateAssets="all" ExcludeAssets="runtime" />
-      <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.12.11" PrivateAssets="all" ExcludeAssets="runtime" />
-      <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.12.11" PrivateAssets="all" ExcludeAssets="runtime" />
+      <!-- Roslynator analyzers commented out - they're optional code quality tools -->
+      <!-- Uncomment these if you want code style warnings (requires NuGet access): -->
+      <!-- <PackageReference Include="Roslynator.Analyzers" Version="4.12.11" PrivateAssets="all" ExcludeAssets="runtime" /> -->
+      <!-- <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.12.11" PrivateAssets="all" ExcludeAssets="runtime" /> -->
+      <!-- <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.12.11" PrivateAssets="all" ExcludeAssets="runtime" /> -->
 
       <EmbeddedResource Include="Resources\*" />
     </ItemGroup>
