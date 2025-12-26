@@ -42,7 +42,7 @@ echo Copying DLLs to: %CD%\%LIBS_PATH%
 echo.
 
 REM Copy MelonLoader DLLs
-echo [1/4] Checking MelonLoader folder...
+echo [1/5] Checking MelonLoader folder...
 if exist "%SR2_PATH%\MelonLoader\" (
     echo   Found MelonLoader folder, copying DLLs...
     copy /Y "%SR2_PATH%\MelonLoader\*.dll" "%LIBS_PATH%\" >nul 2>&1
@@ -59,8 +59,18 @@ if exist "%SR2_PATH%\MelonLoader\" (
     exit /b 1
 )
 
+REM Copy .NET 6 Runtime DLLs (Core MelonLoader for .NET 6)
+echo [2/5] Checking MelonLoader net6 folder...
+if exist "%SR2_PATH%\MelonLoader\net6\" (
+    echo   Found net6 folder, copying DLLs...
+    copy /Y "%SR2_PATH%\MelonLoader\net6\*.dll" "%LIBS_PATH%\" >nul 2>&1
+    echo   [OK] .NET 6 runtime DLLs copied
+) else (
+    echo   [WARN] net6 folder not found
+)
+
 REM Copy Il2Cpp Assemblies (Game assemblies converted from Il2Cpp)
-echo [2/4] Checking Il2CppAssemblies folder...
+echo [3/5] Checking Il2CppAssemblies folder...
 if exist "%SR2_PATH%\MelonLoader\Il2CppAssemblies\" (
     echo   Found Il2CppAssemblies folder, copying DLLs...
     copy /Y "%SR2_PATH%\MelonLoader\Il2CppAssemblies\*.dll" "%LIBS_PATH%\" >nul 2>&1
@@ -70,7 +80,7 @@ if exist "%SR2_PATH%\MelonLoader\Il2CppAssemblies\" (
 )
 
 REM Copy Managed Framework DLLs
-echo [3/4] Checking MelonLoader Managed folder...
+echo [4/5] Checking MelonLoader Managed folder...
 if exist "%SR2_PATH%\MelonLoader\Managed\" (
     echo   Found Managed folder, copying DLLs...
     copy /Y "%SR2_PATH%\MelonLoader\Managed\*.dll" "%LIBS_PATH%\" >nul 2>&1
@@ -80,7 +90,7 @@ if exist "%SR2_PATH%\MelonLoader\Managed\" (
 )
 
 REM Copy SR2E dependency
-echo [4/4] Checking for SR2E mod...
+echo [5/5] Checking for SR2E mod...
 set "SR2E_PATH=%SR2_PATH%\Mods\SR2E.dll"
 if exist "%SR2E_PATH%" (
     copy /Y "%SR2E_PATH%" "%LIBS_PATH%\" >nul 2>&1
