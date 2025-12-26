@@ -14,7 +14,9 @@ namespace SR2MP.Server.Handlers;
 public class ConnectHandler : BasePacketHandler
 {
     public ConnectHandler(NetworkManager networkManager, ClientManager clientManager)
-        : base(networkManager, clientManager) { }
+        : base(networkManager, clientManager)
+    {
+    }
 
     public override void Handle(byte[] data, IPEndPoint senderEndPoint)
     {
@@ -28,9 +30,12 @@ public class ConnectHandler : BasePacketHandler
 
         var client = clientManager.AddClient(senderEndPoint, playerId);
 
-        var money = SceneContext.Instance.PlayerState.GetCurrency(GameContext.Instance.LookupDirector._currencyList[0].Cast<ICurrency>());
-        var rainbowMoney = SceneContext.Instance.PlayerState.GetCurrency(GameContext.Instance.LookupDirector._currencyList[1].Cast<ICurrency>());
-        
+        var money = SceneContext.Instance.PlayerState.GetCurrency(GameContext.Instance.LookupDirector._currencyList[0]
+            .Cast<ICurrency>());
+        var rainbowMoney =
+            SceneContext.Instance.PlayerState.GetCurrency(GameContext.Instance.LookupDirector._currencyList[1]
+                .Cast<ICurrency>());
+
         var ackPacket = new ConnectAckPacket
         {
             Type = (byte)PacketType.ConnectAck,
@@ -48,18 +53,35 @@ public class ConnectHandler : BasePacketHandler
         };
 
         Main.Server.SendToAllExcept(joinPacket, senderEndPoint);
-        
+
         SendPlotsPacket(senderEndPoint);
         SendActorsPacket(senderEndPoint);
-        
+        SendUpgradesPacket(senderEndPoint);
+
         SrLogger.LogMessage($"Player {playerId} successfully connected",
             $"Player {playerId} successfully connected from {senderEndPoint}");
+    }
+
+    void SendUpgradesPacket(IPEndPoint client)
+    {
+        var upgrades = new List<int>();
+
+        foreach (var upgrade in Resources.FindObjectsOfTypeAll<UpgradeDefinition>())
+        {
+            upgrades.Add(SceneContext.Instance.PlayerState._model.upgradeModel.GetUpgradeLevel(upgrade));
+        }
+
+        var upgradesPacket = new UpgradesPacket()
+        {
+            Type = (byte)PacketType.InitialPlayerUpgrades, Upgrades = upgrades,
+        };
+        Main.Server.SendToClient(upgradesPacket, client);
     }
 
     void SendActorsPacket(IPEndPoint client)
     {
         var actorsList = new List<ActorsPacket.Actor>();
-        
+
         foreach (var actorKeyValuePair in SceneContext.Instance.GameModel.identifiables)
         {
             var actor = actorKeyValuePair.Value;
@@ -74,42 +96,30 @@ public class ConnectHandler : BasePacketHandler
             });
         }
 
-        var actorsPacket = new ActorsPacket() 
-        { 
-            Type = (byte)PacketType.InitialActors,
-            Actors = actorsList
-        };
+        var actorsPacket = new ActorsPacket() { Type = (byte)PacketType.InitialActors, Actors = actorsList };
 
         Main.Server.SendToClient(actorsPacket, client);
     }
+
     void SendPlotsPacket(IPEndPoint client)
     {
         var plotsList = new List<LandPlotsPacket.Plot>();
-    
+
         foreach (var plotKeyValuePair in SceneContext.Instance.GameModel.landPlots)
         {
             var plot = plotKeyValuePair.Value;
             var id = plotKeyValuePair.Key;
-            
+
             var upgradesList = new Il2CppSystem.Collections.Generic.List<LandPlot.Upgrade>();
             foreach (var upgrade in plot.upgrades)
             {
                 upgradesList.Add(upgrade);
             }
-        
-            plotsList.Add(new LandPlotsPacket.Plot()
-            {
-                ID = id,
-                Type = plot.typeId,
-                UpgradesList = upgradesList,
-            });
+
+            plotsList.Add(new LandPlotsPacket.Plot() { ID = id, Type = plot.typeId, UpgradesList = upgradesList, });
         }
 
-        var plotsPacket = new LandPlotsPacket() 
-        { 
-            Type = (byte)PacketType.InitialPlots,
-            Plots = plotsList
-        };
+        var plotsPacket = new LandPlotsPacket() { Type = (byte)PacketType.InitialPlots, Plots = plotsList };
 
         Main.Server.SendToClient(plotsPacket, client);
     }

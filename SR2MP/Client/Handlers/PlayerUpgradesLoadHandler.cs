@@ -17,13 +17,13 @@ public class PlayerUpgradesLoadHandler : BaseClientPacketHandler
         using var reader = new PacketReader(data);
         var packet = reader.ReadPacket<UpgradesPacket>();
 
-        var upgradeId = 0;
+        var upgradeInd = 0;
         var upgradesCLient = Resources.FindObjectsOfTypeAll<UpgradeDefinition>();
         foreach (var upgradeLvl in packet.Upgrades)
         {
-            SceneContext.Instance.PlayerState._model.upgradeModel.SetUpgradeLevel(upgradesCLient[upgradeId],
+            SceneContext.Instance.PlayerState._model.upgradeModel.SetUpgradeLevel(upgradesCLient[upgradeInd],
                 upgradeLvl);
-            upgradeId++;
+            upgradeInd++;
         }
     }
 }
