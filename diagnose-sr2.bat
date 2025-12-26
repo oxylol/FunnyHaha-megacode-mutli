@@ -52,8 +52,21 @@ echo Checking for MelonLoader:
 echo -------------------------
 if exist "%SR2_PATH%\MelonLoader\" (
     echo [FOUND] MelonLoader folder
-    for /f %%A in ('dir /b "%SR2_PATH%\MelonLoader\*.dll" 2^>nul ^| find /c /v ""') do set DLL_COUNT=%%A
-    echo   %DLL_COUNT% DLL files found
+    echo.
+    echo   Subfolders in MelonLoader:
+    dir /b /ad "%SR2_PATH%\MelonLoader" 2>nul
+    echo.
+    echo   DLLs in MelonLoader root:
+    for /f %%A in ('dir /b "%SR2_PATH%\MelonLoader\*.dll" 2^>nul ^| find /c /v ""') do echo   %%A files
+    echo.
+    if exist "%SR2_PATH%\MelonLoader\Managed\" (
+        echo   [FOUND] MelonLoader\Managed subfolder
+        for /f %%A in ('dir /b "%SR2_PATH%\MelonLoader\Managed\*.dll" 2^>nul ^| find /c /v ""') do echo     %%A DLL files
+    )
+    if exist "%SR2_PATH%\MelonLoader\Il2CppAssemblies\" (
+        echo   [FOUND] MelonLoader\Il2CppAssemblies subfolder
+        for /f %%A in ('dir /b "%SR2_PATH%\MelonLoader\Il2CppAssemblies\*.dll" 2^>nul ^| find /c /v ""') do echo     %%A DLL files
+    )
 ) else (
     echo [NOT FOUND] MelonLoader folder
 )
