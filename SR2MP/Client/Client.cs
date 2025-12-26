@@ -263,7 +263,7 @@ public sealed class Client
         return playerManager.GetPlayer(playerId);
     }
 
-    public List<RemotePlayer> GetAllRemotePlayers()
+    public IEnumerable<RemotePlayer> GetAllRemotePlayers()
     {
         return playerManager.GetAllPlayers();
     }

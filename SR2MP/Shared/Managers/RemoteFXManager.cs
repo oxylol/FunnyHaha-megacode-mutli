@@ -17,10 +17,14 @@ namespace SR2MP.Shared.Managers
         internal void Initialize()
         {
             allFX.Clear();
-            foreach (var particle in Resources.FindObjectsOfTypeAll<ParticleSystemRenderer>())
+
+            // Cache all particles to avoid duplicate expensive FindObjectsOfTypeAll calls
+            var allParticles = Resources.FindObjectsOfTypeAll<ParticleSystemRenderer>();
+
+            foreach (var particle in allParticles)
             {
                 var particleName = particle.gameObject.name.Replace(' ', '_');
-                
+
                 allFX.TryAdd(particleName, particle.gameObject);
             }
             allCues.Clear();
@@ -28,14 +32,14 @@ namespace SR2MP.Shared.Managers
             {
                 if (cue.Spatialization != SECTR_AudioCue.Spatializations.Simple2D)
                     cue.Spatialization = SECTR_AudioCue.Spatializations.Occludable3D;
-                
+
                 var cueName = cue.name.Replace(' ', '_');
                 allCues.TryAdd(cueName, cue);
             }
             playerFXMap = new Dictionary<PlayerFXType, GameObject>
             {
                 { PlayerFXType.None, null! },
-                { PlayerFXType.VacReject, allFX["FX_vacReject"] }, 
+                { PlayerFXType.VacReject, allFX["FX_vacReject"] },
                 { PlayerFXType.VacAccept, allFX["FX_vacAcquire"] },
                 { PlayerFXType.VacShoot, allFX["FX_VacpackShoot"] }
             };
@@ -53,12 +57,14 @@ namespace SR2MP.Shared.Managers
             {
                 if (playerFX.Value)
                 {
-                    // Please Az find a better way :sob:
-                    foreach (var particle in Resources.FindObjectsOfTypeAll<ParticleSystemRenderer>()
-                                 .Where(x => x.name.Contains(playerFX.Value.name)))
+                    // Reuse cached particles instead of expensive second FindObjectsOfTypeAll call
+                    foreach (var particle in allParticles)
                     {
-                        if (!particle.GetComponent<NetworkPlayerFX>())
-                            particle.AddComponent<NetworkPlayerFX>().fxType = playerFX.Key;
+                        if (particle.name.Contains(playerFX.Value.name))
+                        {
+                            if (!particle.GetComponent<NetworkPlayerFX>())
+                                particle.AddComponent<NetworkPlayerFX>().fxType = playerFX.Key;
+                        }
                     }
                 }
             }

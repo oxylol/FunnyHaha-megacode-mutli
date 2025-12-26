@@ -36,17 +36,27 @@ public static class PacketChunkManager
 
         if (chunkIndex + 1 >= packet.totalChunks)
         {
-            var completeData = new List<byte>();
+            // Calculate total size and allocate single buffer
+            var totalSize = 0;
             foreach (var chunk in packet.chunks)
             {
-                completeData.AddRange(chunk);
+                totalSize += chunk.Length;
+            }
+
+            fullData = new byte[totalSize];
+            var offset = 0;
+
+            // Use Buffer.BlockCopy for efficient copying
+            foreach (var chunk in packet.chunks)
+            {
+                Buffer.BlockCopy(chunk, 0, fullData, offset, chunk.Length);
+                offset += chunk.Length;
             }
 
             incompletePackets.Remove(packetType);
-            
+
             SrLogger.LogPacketSize($"Fully finished merge: type={packetType}");
-            
-            fullData = completeData.ToArray();
+
             return true;
         }
         else
