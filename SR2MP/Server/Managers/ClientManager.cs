@@ -4,73 +4,74 @@ using SR2MP.Server.Models;
 
 namespace SR2MP.Server.Managers;
 
+// Custom comparer for IPEndPoint to avoid string allocations
+internal class IPEndPointComparer : IEqualityComparer<IPEndPoint>
+{
+    public bool Equals(IPEndPoint? x, IPEndPoint? y)
+    {
+        if (x == null || y == null) return x == y;
+        return x.Address.Equals(y.Address) && x.Port == y.Port;
+    }
+
+    public int GetHashCode(IPEndPoint obj)
+    {
+        return HashCode.Combine(obj.Address, obj.Port);
+    }
+}
+
 public class ClientManager
 {
-    private readonly ConcurrentDictionary<string, ClientInfo> clients = new();
+    private readonly ConcurrentDictionary<IPEndPoint, ClientInfo> clients = new(new IPEndPointComparer());
 
     public event Action<ClientInfo>? OnClientAdded;
     public event Action<ClientInfo>? OnClientRemoved;
     public int ClientCount => clients.Count;
 
-    public bool TryGetClient(string clientInfo, out ClientInfo? client)
-    {
-        return clients.TryGetValue(clientInfo, out client);
-    }
-
     public bool TryGetClient(IPEndPoint endPoint, out ClientInfo? client)
     {
-        string clientInfo = $"{endPoint.Address}:{endPoint.Port}";
-        return TryGetClient(clientInfo, out client);
+        return clients.TryGetValue(endPoint, out client);
     }
 
-    public ClientInfo? GetClient(string clientInfo)
+    public ClientInfo? GetClient(IPEndPoint endPoint)
     {
-        clients.TryGetValue(clientInfo, out var client);
+        clients.TryGetValue(endPoint, out var client);
         return client;
     }
 
     public ClientInfo AddClient(IPEndPoint endPoint, string playerId)
     {
-        string clientInfo = $"{endPoint.Address}:{endPoint.Port}";
-
         var client = new ClientInfo(endPoint, playerId);
 
-        if (clients.TryAdd(clientInfo, client))
+        if (clients.TryAdd(endPoint, client))
         {
             SrLogger.LogMessage($"Client added! (PlayerId: {playerId})",
-                $"Client added: {clientInfo} (PlayerId: {playerId})");
+                $"Client added: {client.GetClientInfo()} (PlayerId: {playerId})");
             OnClientAdded?.Invoke(client);
             return client;
         }
         else
         {
             SrLogger.LogWarning($"Client already exists! (PlayerId: {playerId})",
-                $"Client already exists: {clientInfo} (PlayerId: {playerId})");
-            return clients[clientInfo];
+                $"Client already exists: {client.GetClientInfo()} (PlayerId: {playerId})");
+            return clients[endPoint];
         }
     }
 
-    public bool RemoveClient(string clientInfo)
+    public bool RemoveClient(IPEndPoint endPoint)
     {
-        if (clients.TryRemove(clientInfo, out var client))
+        if (clients.TryRemove(endPoint, out var client))
         {
             SrLogger.LogMessage($"Client removed!",
-                $"Client removed: {clientInfo}");
+                $"Client removed: {client.GetClientInfo()}");
             OnClientRemoved?.Invoke(client);
             return true;
         }
         return false;
     }
 
-    public bool RemoveClient(IPEndPoint endPoint)
+    public void UpdateHeartbeat(IPEndPoint endPoint)
     {
-        string clientInfo = $"{endPoint.Address}:{endPoint.Port}";
-        return RemoveClient(clientInfo);
-    }
-
-    public void UpdateHeartbeat(string clientInfo)
-    {
-        if (clients.TryGetValue(clientInfo, out var client))
+        if (clients.TryGetValue(endPoint, out var client))
         {
             client.UpdateHeartbeat();
         }
@@ -91,7 +92,7 @@ public class ClientManager
         var timedOut = GetTimedOutClients().ToArray();
         foreach (var client in timedOut)
         {
-            RemoveClient(client.GetClientInfo());
+            RemoveClient(client.EndPoint);
         }
     }
 

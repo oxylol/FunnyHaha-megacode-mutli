@@ -17,6 +17,7 @@ public sealed class Client
     private volatile bool isConnected;
 
     private readonly ClientPacketManager packetManager;
+    private readonly RemotePlayerManager playerManager = new();
 
     public string OwnPlayerId { get; private set; } = string.Empty;
     public bool IsConnected => isConnected;
@@ -163,8 +164,8 @@ public sealed class Client
 
     internal void StartHeartbeat()
     {
-        // Removed this temporarily because there are no Handlers and the Client will get timeouted
-        // heartbeatTimer = new Timer(SendHeartbeat, null, TimeSpan.FromSeconds(215), TimeSpan.FromSeconds(215));
+        // Send heartbeat every 15 seconds to prevent 30-second timeout
+        heartbeatTimer = new Timer(SendHeartbeat, null, TimeSpan.FromSeconds(15), TimeSpan.FromSeconds(15));
     }
 
     private void SendHeartbeat(object? state)

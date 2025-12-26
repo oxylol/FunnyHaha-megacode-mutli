@@ -164,7 +164,7 @@ public sealed class Server
         }
     }
 
-    public void SendToAllExcept(IPacket packet, string excludedClientInfo)
+    public void SendToAllExcept(IPacket packet, IPEndPoint excludeEndPoint)
     {
         using var writer = new PacketWriter();
         packet.Serialise(writer);
@@ -172,16 +172,10 @@ public sealed class Server
 
         foreach (var client in clientManager.GetAllClients())
         {
-            if (client.GetClientInfo() != excludedClientInfo)
+            if (!client.EndPoint.Equals(excludeEndPoint))
             {
                 networkManager.Send(data, client.EndPoint);
             }
         }
-    }
-
-    public void SendToAllExcept(IPacket packet, IPEndPoint excludeEndPoint)
-    {
-        string clientInfo = $"{excludeEndPoint.Address}:{excludeEndPoint.Port}";
-        SendToAllExcept(packet, clientInfo);
     }
 }

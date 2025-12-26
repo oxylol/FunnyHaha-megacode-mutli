@@ -29,6 +29,8 @@ namespace SR2MP.Components.Player
         public TextMeshPro usernamePanel;
 
         private float transformTimer = PlayerTimer;
+        private int meshReloadFrameCounter = 0;
+        private const int MeshReloadInterval = 10; // Reload every 10 frames instead of every frame
 
         private Animator animator;
         private bool hasAnimationController = false;
@@ -41,15 +43,24 @@ namespace SR2MP.Components.Player
 
         public bool IsLocal { get; internal set; } = false;
 
-        
-        private TMP_FontAsset GetFont(string fontName) => Resources.FindObjectsOfTypeAll<TMP_FontAsset>().FirstOrDefault(x => x.name == fontName)!;
+        // Cache font to avoid expensive Resources.FindObjectsOfTypeAll() on every SetUsername call
+        private static TMP_FontAsset? _cachedUsernameFont;
+        private static TMP_FontAsset GetCachedFont(string fontName)
+        {
+            if (_cachedUsernameFont == null)
+            {
+                _cachedUsernameFont = Resources.FindObjectsOfTypeAll<TMP_FontAsset>().FirstOrDefault(x => x.name == fontName)!;
+            }
+            return _cachedUsernameFont;
+        }
+
         public void SetUsername(string username)
         {
             usernamePanel = transform.GetChild(1).GetComponent<TextMeshPro>();
             usernamePanel.text = username;
             usernamePanel.alignment = TextAlignmentOptions.Center;
             usernamePanel.fontSize = 3;
-            usernamePanel.font = GetFont("Runsell Type - HemispheresCaps2 (Latin)");
+            usernamePanel.font = GetCachedFont("Runsell Type - HemispheresCaps2 (Latin)");
             if (!usernamePanel.GetComponent<TransformLookAtCamera>())
             {
                 usernamePanel.gameObject.AddComponent<TransformLookAtCamera>().targetTransform =
@@ -127,12 +138,18 @@ namespace SR2MP.Components.Player
                 timer = Mathf.Clamp01(timer);
 
                 transform.position = Vector3.Lerp(previousPosition, nextPosition, timer);
-                
+
                 receivedLookY = Mathf.LerpAngle(previousRotation.y, nextRotation.y, timer);
                 transform.eulerAngles = new Vector3(0,  Mathf.LerpAngle(previousRotation.x, nextRotation.x, timer), 0);
             }
 
-            ReloadMeshTransform();
+            // Throttle mesh reload to reduce performance overhead
+            meshReloadFrameCounter++;
+            if (meshReloadFrameCounter >= MeshReloadInterval)
+            {
+                meshReloadFrameCounter = 0;
+                ReloadMeshTransform();
+            }
             if (transformTimer < 0)
             {
                 transformTimer = PlayerTimer;
@@ -191,16 +208,10 @@ namespace SR2MP.Components.Player
 
         void ReloadMeshTransform()
         {
-            foreach (var renderer in renderers)
-            {
-                // This is for the getter to refresh the render position stuff qwq
-                var bounds = renderer.bounds;
-                var localBounds = renderer.localBounds;
-            }
-
+            // Removed unnecessary bounds access - already throttled to every 10 frames
             if (!IsLocal)
             {
-                // This is for the 
+                // Toggle collider to refresh physics (throttled to reduce overhead)
                 collider.enabled = false;
                 collider.enabled = true;
             }
